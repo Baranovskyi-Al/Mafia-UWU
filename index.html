@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мафія Онлайн</title>
+    <title>МАФІЯ</title>
     
     <script src="https://meet.jit.si/external_api.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -11,12 +11,13 @@
 
     <style>
         :root {
-            --bg-dark: #121212;
+            --bg-dark: #0f0f0f;
             --panel-bg: #1a1a1a;
             --text-main: #e0e0e0;
             --red-kill: #b71c1c;
             --green-alive: #2e7d32;
             --blue-action: #1976d2;
+            --gray-btn: #444;
         }
 
         body { 
@@ -33,89 +34,94 @@
             align-items: center; justify-content: center; z-index: 9999; 
         }
         .login-box { 
-            background: var(--panel-bg); padding: 40px; border-radius: 8px; 
+            background: var(--panel-bg); padding: 40px; border-radius: 12px; 
             text-align: center; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
             border: 1px solid #333; 
         }
-        .login-box h2 { margin-top: 0; color: white; letter-spacing: 2px; }
+        .login-box h2 { margin: 0 0 20px; color: white; letter-spacing: 2px; }
         .login-box input { 
             width: 100%; padding: 12px; margin: 10px 0; background: #252525; 
-            border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; 
+            border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; 
         }
         .login-box button { 
             width: 100%; padding: 12px; background: var(--red-kill); color: white; 
-            border: none; border-radius: 4px; cursor: pointer; font-weight: bold; 
+            border: none; border-radius: 6px; cursor: pointer; font-weight: bold; 
             font-size: 16px; margin-top: 15px; transition: 0.2s;
         }
         .login-box button:hover { background: #d32f2f; }
 
-        /* --- Область Jitsi (Відео) --- */
+        /* --- Область відео --- */
         #jitsi-container { flex-grow: 1; position: relative; background: #000; }
 
-        /* --- Панель ведучого --- */
+        /* --- Панель управління Ведучого --- */
         #host-panel { 
             width: 320px; background: var(--panel-bg); border-left: 2px solid #222; 
             display: none; flex-direction: column; padding: 20px; overflow-y: auto; 
             box-sizing: border-box;
         }
         .player-card { 
-            background: #252525; padding: 12px; margin-bottom: 12px; border-radius: 6px; 
+            background: #252525; padding: 12px; margin-bottom: 12px; border-radius: 8px; 
             display: flex; justify-content: space-between; align-items: center; 
-            border-left: 4px solid var(--green-alive); 
+            border-left: 4px solid var(--green-alive); transition: 0.3s;
         }
         .player-card.dead { border-left-color: #555; opacity: 0.6; }
+        
         .btn-action { 
-            color: white; border: none; padding: 6px 12px; border-radius: 4px; 
+            color: white; border: none; padding: 8px 12px; border-radius: 5px; 
             cursor: pointer; font-weight: bold; font-size: 12px; 
         }
         .btn-kill { background: var(--red-kill); }
         .btn-revive { background: var(--green-alive); }
-        .btn-random { background: var(--blue-action); width: 100%; padding: 10px; margin-bottom: 15px; font-size: 14px; }
-        .btn-random:hover { background: #115293; }
+        .btn-random { background: var(--blue-action); width: 100%; padding: 12px; margin-bottom: 20px; font-size: 14px; }
+        .btn-exit { background: var(--gray-btn); width: 100%; margin-top: auto; padding: 10px; }
 
-        /* --- Ефекти смерті для гравця --- */
-        .dead-overlay { filter: grayscale(1) brightness(0.25); pointer-events: none; }
+        /* --- Ефекти смерті --- */
+        .dead-overlay { filter: grayscale(1) brightness(0.2); pointer-events: none; }
         #death-msg { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             color: #ff3333; font-size: 4rem; font-weight: bold; display: none; 
-            z-index: 100; text-shadow: 0 0 20px black; letter-spacing: 5px; text-align: center;
+            z-index: 100; text-shadow: 0 0 20px black; text-align: center;
         }
+
+        /* Кнопка виходу для гравців */
+        #player-exit-btn {
+            position: fixed; bottom: 20px; left: 20px; z-index: 500;
+            padding: 10px 15px; background: rgba(50,50,50,0.7); color: #ccc;
+            border: none; border-radius: 5px; cursor: pointer; display: none;
+        }
+        #player-exit-btn:hover { background: #444; color: #fff; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2>МАФІЯ ОНЛАЙН</h2>
-            <input type="text" id="userName" placeholder="Твоє ім'я (напр. Дон)">
+            <h2>МАФІЯ</h2>
+            <input type="text" id="userName" placeholder="Твоє ім'я">
             <input type="password" id="roomPass" placeholder="Пароль доступу">
-            <button onclick="initGame()">УВІЙТИ В МІСТО</button>
-            <p style="font-size: 11px; color: #777; margin-top: 20px;">
-                *Пароль визначає вашу роль (Ведучий, Гравець, Глядач).
-            </p>
+            <button onclick="initGame()">УВІЙТИ</button>
+            <p style="font-size: 10px; color: #666; margin-top: 15px;">РОЛІ: ВЕДУЧИЙ, ГРАВЕЦЬ, ГЛЯДАЧ</p>
         </div>
     </div>
+
+    <button id="player-exit-btn" onclick="leaveGame()">🚪 Залишити гру</button>
 
     <div id="jitsi-container">
         <div id="death-msg">💀 ВИ ВБИТІ</div>
     </div>
 
     <div id="host-panel">
-        <h3 style="margin-top: 0; text-align: center; border-bottom: 1px solid #444; padding-bottom: 10px;">ПУЛЬТ ВЕДУЧОГО</h3>
-        <button class="btn-action btn-random" onclick="assignNumbers()">🎲 Роздати номери</button>
-        <div id="players-list">
-            <p style="color: #888; text-align: center;">Очікування гравців...</p>
-        </div>
+        <h3 style="margin-top: 0; text-align: center; border-bottom: 1px solid #333; padding-bottom: 15px;">КЕРУВАННЯ</h3>
+        <button class="btn-action btn-random" onclick="assignNumbers()">🎲 РОЗДАТИ НОМЕРИ</button>
+        <div id="players-list"></div>
+        <button class="btn-action btn-exit" onclick="leaveGame()">🚪 ВИЙТИ З ГРИ</button>
     </div>
 
     <script>
-        // =====================================
-        // 1. НАЛАШТУВАННЯ СИСТЕМИ
-        // =====================================
         
-        // ВАЖЛИВО: Заміни цей об'єкт на свій з Firebase Console!
+
         const firebaseConfig = {
-            apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
+            	apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
     		authDomain: "mafia-site-6f939.firebaseapp.com",
     		databaseURL: "https://mafia-site-6f939-default-rtdb.europe-west1.firebasedatabase.app",
     		projectId: "mafia-site-6f939",
@@ -125,48 +131,36 @@
     		measurementId: "G-CL90SPXY5W"
         };
 
-        // Паролі для доступу
-        const PASSWORDS = { 
-            player: "Pl_UWU-420", 
-            host: "ADM-Nata_4220",
-            observer: "UWU-Solo"
-        };
+        const PASSWORDS = { player: "123", host: "654321", observer: "333" };
+        const ROOM_NAME = "МАФІЯ"; 
         
-        const ROOM_NAME = "Mafia_Private_Game_2026_TopSecret"; 
+        
+        const JITSI_DOMAIN = 'jitsi.belnet.be'; 
 
-        // Ініціалізація бази даних
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let api = null;
+        let myId = null;
 
-        // =====================================
-        // 2. ЛОГІКА ВХОДУ ТА JITSI
-        // =====================================
+        
         function initGame() {
             const name = document.getElementById('userName').value.trim();
             const pass = document.getElementById('roomPass').value.trim();
 
-            if (!name || !pass) return alert("Будь ласка, заповніть всі поля.");
+            if (!name || !pass) return alert("Заповни всі поля!");
 
             let role = "";
             if (pass === PASSWORDS.host) role = "host";
             else if (pass === PASSWORDS.player) role = "player";
             else if (pass === PASSWORDS.observer) role = "observer";
-            else return alert("Невірний пароль! Доступ заборонено.");
+            else return alert("Невірний пароль!");
 
-            // Ховаємо екран логіну
             document.getElementById('login-screen').style.display = 'none';
 
-            // Налаштовуємо кнопки інтерфейсу для різних ролей
+            // Налаштування кнопок Jitsi
             let jitsiButtons = ['microphone', 'camera', 'chat', 'tileview', 'settings'];
-            
-            if (role === "observer") {
-                // Для чистої трансляції повністю прибираємо всі кнопки
-                jitsiButtons = []; 
-            }
+            if (role === "observer") jitsiButtons = []; // Глядач без кнопок для чистого стріму
 
-            // Налаштування Jitsi
-            const domain = 'meet.jit.si';
             const options = {
                 roomName: ROOM_NAME,
                 parentNode: document.querySelector('#jitsi-container'),
@@ -178,88 +172,75 @@
                 },
                 interfaceConfigOverwrite: { 
                     TOOLBAR_BUTTONS: jitsiButtons,
-                    SHOW_JITSI_WATERMARK: false, 
-                    SHOW_WATERMARK_FOR_GUESTS: false,
+                    SHOW_JITSI_WATERMARK: false,
                     DEFAULT_BACKGROUND: '#000000'
                 }
             };
             
-            api = new JitsiMeetExternalAPI(domain, options);
+            api = new JitsiMeetExternalAPI(JITSI_DOMAIN, options);
 
-            // Запускаємо специфічну логіку після старту Jitsi
             if (role === "host") {
                 document.getElementById('host-panel').style.display = 'flex';
                 runHostLogic();
             } else if (role === "player") {
+                document.getElementById('player-exit-btn').style.display = 'block';
                 runPlayerLogic(name);
-            } else if (role === "observer") {
-                runObserverLogic(name);
+            } else {
+                // Глядач
+                document.getElementById('player-exit-btn').style.display = 'block';
+                api.executeCommand('displayName', '👁 ГЛЯДАЧ: ' + name);
             }
         }
 
-        // =====================================
-        // 3. ЛОГІКА ВЕДУЧОГО
-        // =====================================
+
         function runHostLogic() {
             const listDiv = document.getElementById('players-list');
 
             db.ref(`rooms/${ROOM_NAME}/users`).on('value', (snapshot) => {
                 listDiv.innerHTML = '';
                 const data = snapshot.val();
-                
-                if (!data) {
-                    listDiv.innerHTML = '<p style="color: #888; text-align: center;">Немає активних гравців.</p>';
-                    return;
-                }
+                if (!data) return;
 
                 Object.keys(data).forEach(id => {
                     const user = data[id];
                     const isDead = user.status === 'dead';
-                    const numPrefix = user.number ? `[${user.number}.] ` : '';
+                    const prefix = user.number ? `[${user.number}.] ` : '';
                     
-                    listDiv.innerHTML += `
-                        <div class="player-card ${isDead ? 'dead' : ''}">
-                            <span style="font-weight: 500;">${isDead ? '💀' : '👤'} ${numPrefix}${user.name}</span>
+                    const card = document.createElement('div');
+                    card.className = `player-card ${isDead ? 'dead' : ''}`;
+                    card.innerHTML = `
+                        <span>${isDead ? '💀' : '👤'} ${prefix}${user.name}</span>
+                        <div>
                             ${isDead 
-                                ? `<button class="btn-action btn-revive" onclick="setStatus('${id}', 'alive')">Оживити</button>`
-                                : `<button class="btn-action btn-kill" onclick="setStatus('${id}', 'dead')">Вбити</button>`
+                                ? `<button class="btn-action btn-revive" onclick="setStatus('${id}', 'alive')">ОЖИТИ</button>`
+                                : `<button class="btn-action btn-kill" onclick="setStatus('${id}', 'dead')">ВБИТИ</button>`
                             }
                         </div>
                     `;
+                    listDiv.appendChild(card);
                 });
             });
         }
 
-        window.setStatus = function(uid, status) {
-            db.ref(`rooms/${ROOM_NAME}/users/${uid}/status`).set(status);
-        };
+        window.setStatus = (uid, status) => db.ref(`rooms/${ROOM_NAME}/users/${uid}/status`).set(status);
 
         window.assignNumbers = function() {
             db.ref(`rooms/${ROOM_NAME}/users`).once('value', (snapshot) => {
                 const data = snapshot.val();
-                if (!data) return alert("Немає гравців для роздачі номерів!");
-
-                const playerIds = Object.keys(data);
-                const count = playerIds.length;
-                
-                let numbers = Array.from({length: count}, (_, i) => i + 1);
-                numbers.sort(() => Math.random() - 0.5);
-
+                if (!data) return;
+                const ids = Object.keys(data);
+                let nums = Array.from({length: ids.length}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
                 let updates = {};
-                playerIds.forEach((id, index) => {
-                    updates[`${id}/number`] = numbers[index];
-                });
-                
+                ids.forEach((id, i) => updates[`${id}/number`] = nums[i]);
                 db.ref(`rooms/${ROOM_NAME}/users`).update(updates);
             });
         };
 
-        // =====================================
-        // 4. ЛОГІКА ГРАВЦЯ
-        // =====================================
+        
         function runPlayerLogic(originalName) {
-            const myId = "user_" + Math.random().toString(36).substr(2, 9);
+            myId = "user_" + Math.random().toString(36).substr(2, 9);
             const userRef = db.ref(`rooms/${ROOM_NAME}/users/${myId}`);
+            let isDeadLocal = false;
 
             userRef.set({ name: originalName, status: 'alive' });
             userRef.onDisconnect().remove();
@@ -270,35 +251,38 @@
 
                 const container = document.getElementById('jitsi-container');
                 const msg = document.getElementById('death-msg');
-
                 let prefix = data.number ? `[${data.number}.] ` : '';
 
                 if (data.status === 'dead') {
+                    isDeadLocal = true;
                     api.executeCommand('setAudioMuted', true);
                     api.executeCommand('setVideoMuted', true);
                     api.executeCommand('displayName', `${prefix}ВБИТО ${originalName}`);
-                    
                     container.classList.add('dead-overlay');
                     msg.style.display = 'block';
                 } else {
+                    isDeadLocal = false;
                     api.executeCommand('displayName', `${prefix}${originalName}`);
                     container.classList.remove('dead-overlay');
                     msg.style.display = 'none';
                 }
             });
+
+            
+            api.addEventListeners({
+                audioMuteStatusChanged: (e) => { if (isDeadLocal && !e.muted) api.executeCommand('setAudioMuted', true); },
+                videoMuteStatusChanged: (e) => { if (isDeadLocal && !e.muted) api.executeCommand('setVideoMuted', true); }
+            });
         }
 
-        // =====================================
-        // 5. ЛОГІКА СПОСТЕРІГАЧА (СТРІМЕРА)
-        // =====================================
-        function runObserverLogic(originalName) {
-            // Одразу встановлюємо специфічне ім'я
-            api.executeCommand('displayName', '👁 ГЛЯДАЧ: ' + originalName);
-            
-            // Запобіжник: гарантовано вимикаємо медіа
-            api.executeCommand('setAudioMuted', true);
-            api.executeCommand('setVideoMuted', true);
-        }
+
+        window.leaveGame = function() {
+            if (confirm("Вийти з гри?")) {
+                if (api) api.dispose();
+                if (myId) db.ref(`rooms/${ROOM_NAME}/users/${myId}`).remove();
+                location.reload();
+            }
+        };
     </script>
 </body>
 </html>
