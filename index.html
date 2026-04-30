@@ -147,11 +147,11 @@
                     const hostPrefix = (u.role === 'host') ? "[Ведучий] " : "";
                     const labelText = `${hostPrefix}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
 
-                    // --- ЖОРСТКИЙ АВТОСТАРТ (БЕЗ SCREEN SHARE) ---
+                    // --- ЖОРСТКИЙ АВТОСТАРТ ТІЛЬКИ ДЛЯ ВЕБ-КАМЕРИ ---
                     let ninjaUrl = "";
                     if (id === myId && myRole !== "observer") {
-                        // vd=1 (відео №1), ad=1 (аудіо №1), ss=0 (ВИМКНУТИ екран вибору)
-                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&vd=1&ad=1&ss=0&autostart&as=1&m&pro`;
+                        // push=ID, webcam (тільки камера), as=1 (автостарт), vd=1/ad=1 (пристрої), autoconnect (пропуск кнопки Join)
+                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&autostart&as=1&vd=1&ad=1&autoconnect&m&pro`;
                     } else {
                         ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1`;
                     }
