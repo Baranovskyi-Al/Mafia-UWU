@@ -66,6 +66,7 @@
     </div>
 
     <script>
+        // --- КОНФІГ ---
         const firebaseConfig = {
             apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
             authDomain: "mafia-site-6f939.firebaseapp.com",
@@ -99,6 +100,7 @@
 
             document.getElementById('login-screen').style.display = 'none';
             if (myRole === "host") document.getElementById('host-panel').style.display = 'flex';
+            
             if (myRole !== "observer") document.getElementById('exit-btn').style.display = 'block';
 
             if (myRole !== "observer") {
@@ -150,14 +152,13 @@
                     if (u.status === 'dead') slot.classList.add('dead');
                     else slot.classList.remove('dead');
 
-                    // ПРЕФІКС ДЛЯ ВЕДУЧОГО
                     const hostPrefix = (u.role === 'host') ? "[Ведучий] " : "";
                     const labelText = `${hostPrefix}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
 
                     let ninjaUrl = "";
                     if (id === myId && myRole !== "observer") {
-                        // ПУШ: Додано &as=1 для примусового автозапуску
-                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&autostart&as=1&m&pro&facing=front&ad=1`;
+                        // ПУШ: vd=1 примусово обирає камеру, ad=1 мікрофон, as=1 автостарт
+                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&autostart&as=1&facing=front&ad=1&vd=1&m&pro`;
                     } else {
                         // ПЕРЕГЛЯД
                         ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1`;
