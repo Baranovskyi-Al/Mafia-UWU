@@ -3,65 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>МАФІЯ - STABLE v3.5</title>
+    <title>МАФІЯ - STABLE v3.6</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230a0a0a' stroke='%23d32f2f' stroke-width='4'/><path d='M25 65 h50 v5 a5 5 0 0 1 -5 5 h-40 a5 5 0 0 1 -5 -5 z' fill='%23d32f2f'/><path d='M35 65 v-20 c0-10 10-15 15-15 s15 5 15 15 v20' fill='%23d32f2f'/><rect x='35' y='55' width='30' height='5' fill='%23000'/></svg>">
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
     <style>
-        :root { --bg: #0a0a0a; --panel: #141414; --accent: #d32f2f; --blue: #1976d2; --border: #333; }
-        body { margin: 0; background: var(--bg); color: #eee; font-family: 'Segoe UI', Roboto, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        :root { --bg: #000; --panel: #111; --accent: #d32f2f; --blue: #1976d2; --border: #222; --text: #eee; }
         
-        /* Відео-сітка */
-        #video-grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); grid-auto-rows: 1fr; gap: 8px; padding: 8px; background: #000; align-content: start; overflow-y: auto; }
+        html, body { height: 100%; height: -webkit-fill-available; margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overflow: hidden; }
+
+        /* Сітка */
+        #video-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 10px; padding: 10px; 
+            height: calc(100% - 70px); /* Залишаємо місце для кнопок знизу */
+            overflow-y: auto; align-content: start; 
+        }
         
-        .video-slot { background: #111; border: 2px solid var(--border); border-radius: 8px; position: relative; overflow: hidden; aspect-ratio: 16 / 9; order: 99; }
+        .video-slot { background: #050505; border: 1px solid var(--border); border-radius: 12px; position: relative; overflow: hidden; aspect-ratio: 16 / 9; }
         .video-slot.dead { border-color: var(--accent); }
         .video-slot.dead iframe { opacity: 0.4; filter: grayscale(1); }
         
         .killed-overlay { 
             position: absolute; inset: 0; display: none; align-items: center; justify-content: center; 
-            z-index: 20; pointer-events: none; color: var(--accent); font-size: 5vw; font-weight: 900; 
-            text-transform: uppercase; text-shadow: 0 0 15px #000; transform: rotate(-10deg); text-align: center; padding: 5px;
+            z-index: 20; pointer-events: none; color: var(--accent); font-weight: 900; 
+            text-transform: uppercase; text-shadow: 0 0 15px #000; transform: rotate(-8deg); text-align: center;
+            font-size: clamp(14px, 5vw, 32px); padding: 10px;
         }
         .video-slot.dead .killed-overlay { display: flex; }
 
         iframe { width: 100%; height: 100%; border: none; background: #000; object-fit: cover; }
         
-        .player-label { position: absolute; top: 35px; left: 8px; background: rgba(0,0,0,0.7); padding: 2px 8px; border-radius: 4px; z-index: 10; font-size: 11px; border: 1px solid #444; pointer-events: none; }
-        .slot-num { position: absolute; top: 2px; right: 10px; font-size: 30px; font-weight: 900; color: rgba(255,255,255,0.1); z-index: 5; pointer-events: none; }
+        .player-label { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 3px 10px; border-radius: 6px; z-index: 10; font-size: 11px; font-weight: 600; border: 1px solid #333; }
+        .slot-num { position: absolute; top: 0; right: 8px; font-size: 36px; font-weight: 900; color: rgba(255,255,255,0.05); z-index: 5; pointer-events: none; }
 
-        /* Панель ведучого */
-        #host-panel { width: 320px; background: var(--panel); border-left: 2px solid #222; padding: 15px; display: none; flex-direction: column; box-sizing: border-box; transition: transform 0.3s ease; }
-        .player-row { margin-bottom: 10px; padding: 10px; background: #222; border-radius: 6px; border-left: 3px solid #444; font-size: 14px; }
+        /* Нижня панель керування */
+        #bottom-bar { 
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px; 
+            background: rgba(10,10,10,0.8); backdrop-filter: blur(15px);
+            display: flex; justify-content: center; align-items: center; gap: 15px;
+            border-top: 1px solid #222; z-index: 100; padding-bottom: env(safe-area-inset-bottom);
+        }
 
-        /* Кнопки мобільного меню */
-        #mobile-admin-toggle { display: none; position: fixed; bottom: 20px; left: 20px; z-index: 2000; background: var(--blue); color: white; border: none; border-radius: 50px; padding: 12px 20px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        /* Кнопки */
+        .btn { padding: 10px 20px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-admin { background: var(--blue); color: white; display: none; }
+        .btn-exit { background: #222; color: #ccc; display: none; }
+        .btn:active { transform: scale(0.95); opacity: 0.8; }
 
-        #login-screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; align-items: center; justify-content: center; }
-        .login-box { background: var(--panel); padding: 30px; border-radius: 15px; text-align: center; border: 1px solid #333; width: 300px; }
-        
-        input { width: 100%; padding: 12px; margin: 8px 0; background: #1a1a1a; border: 1px solid #444; color: #fff; border-radius: 6px; box-sizing: border-box; }
-        button { padding: 10px; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        
-        #exit-btn { position: fixed; bottom: 20px; right: 20px; z-index: 100; padding: 12px 20px; background: #333; color: #fff; border: none; border-radius: 50px; cursor: pointer; display: none; font-size: 12px; }
+        /* Drawer Адміна */
+        #host-panel { 
+            position: fixed; top: 0; right: 0; bottom: 0; width: 340px; 
+            background: rgba(15,15,15,0.95); backdrop-filter: blur(20px);
+            border-left: 1px solid #333; z-index: 1000; transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
+        }
+        #host-panel.open { transform: translateX(0); }
+        .player-row { background: #222; margin-bottom: 8px; padding: 12px; border-radius: 10px; border-left: 4px solid var(--blue); }
 
-        /* Мобільні стилі */
+        #login-screen { position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .login-box { background: #111; padding: 40px; border-radius: 24px; text-align: center; border: 1px solid #222; width: 90%; max-width: 340px; }
+        input { width: 100%; padding: 14px; margin: 10px 0; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+
+        /* Мобільна адаптація */
         @media (max-width: 768px) {
-            #video-grid { grid-template-columns: repeat(2, 1fr); padding: 5px; gap: 5px; }
-            .killed-overlay { font-size: 18px; }
-            
-            #host-panel { 
-                position: fixed; top: 0; right: 0; bottom: 0; 
-                width: 85%; z-index: 1500; transform: translateX(100%); 
-                display: flex !important; /* Force flex but hidden by transform */
-                box-shadow: -10px 0 30px rgba(0,0,0,0.8);
-            }
-            #host-panel.open { transform: translateX(0); }
-            #mobile-admin-toggle { display: block; }
-            .player-label { font-size: 10px; top: 25px; }
-            .slot-num { font-size: 24px; }
+            #video-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 6px; }
+            #host-panel { width: 100%; }
+            .btn { padding: 12px 15px; font-size: 11px; }
         }
     </style>
 </head>
@@ -69,24 +81,26 @@
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color: var(--accent);">МАФІЯ</h2>
-            <input type="text" id="userName" placeholder="Name (Latin only)">
-            <input type="password" id="roomPass" placeholder="Password">
-            <button onclick="startApp()" style="width:100%">УВІЙТИ</button>
+            <h2 style="color: var(--accent); margin-bottom: 25px;">МАФІЯ</h2>
+            <input type="text" id="userName" placeholder="Твоє ім'я (Latin)">
+            <input type="password" id="roomPass" placeholder="Пароль">
+            <button class="btn" onclick="startApp()" style="background: var(--accent); width: 100%; margin-top: 10px;">УВІЙТИ В МІСТО</button>
         </div>
     </div>
 
-    <button id="mobile-admin-toggle" onclick="toggleHostPanel()">МЕНЮ АДМІНА</button>
-    <button id="exit-btn" onclick="exitGame()">ВИЙТИ</button>
+    <div id="bottom-bar">
+        <button id="mobile-admin-toggle" class="btn btn-admin" onclick="toggleHostPanel()">ПАНЕЛЬ ВЕДУЧОГО</button>
+        <button id="exit-btn" class="btn btn-exit" onclick="exitGame()">ВИЙТИ</button>
+    </div>
 
     <div id="video-grid"></div>
 
     <div id="host-panel">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin:0;">АДМІН-КА</h3>
-            <button onclick="toggleHostPanel()" style="background:#444; padding:5px 10px; display:none;" id="close-panel-btn">✕</button>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin:0; letter-spacing: 1px;">КЕРУВАННЯ</h3>
+            <button onclick="toggleHostPanel()" style="background:none; border:none; color:#777; font-size:24px; cursor:pointer;">✕</button>
         </div>
-        <button style="background: var(--blue); margin-bottom: 15px; width:100%;" onclick="assignNumbers()">🎲 РАНДОМ НОМЕРІВ</button>
+        <button class="btn" style="background: var(--blue); color:white; width:100%; margin-bottom: 20px;" onclick="assignNumbers()">🎲 РОЗДАТИ НОМЕРИ</button>
         <div id="player-list-admin" style="overflow-y: auto; flex-grow: 1;"></div>
     </div>
 
@@ -112,19 +126,16 @@
         async function startApp() {
             const rawName = document.getElementById('userName').value.trim();
             const pass = document.getElementById('roomPass').value.trim();
-            if (!rawName || /[а-яА-ЯіІїЇєЄґҐ]/.test(rawName)) return alert("Latin name only!");
+            if (!rawName || /[а-яА-ЯіІїЇєЄґҐ]/.test(rawName)) return alert("Використовуйте латиницю!");
 
             myId = "p_" + rawName.toLowerCase().replace(/\s+/g, '_');
             if (pass === PASSWORDS.host) myRole = "host";
             else if (pass === PASSWORDS.player) myRole = "player";
             else if (pass === PASSWORDS.observer) myRole = "observer";
-            else return alert("Wrong password");
+            else return alert("Невірний пароль");
 
             document.getElementById('login-screen').style.display = 'none';
-            if (myRole === "host") {
-                document.getElementById('host-panel').style.display = 'flex';
-                if(window.innerWidth <= 768) document.getElementById('close-panel-btn').style.display = 'block';
-            }
+            if (myRole === "host") document.getElementById('mobile-admin-toggle').style.display = 'block';
             if (myRole !== "observer") {
                 document.getElementById('exit-btn').style.display = 'block';
                 const userRef = db.ref(`rooms/${ROOM_NAME}/users/${myId}`);
@@ -175,7 +186,7 @@
                     slot.querySelector('.slot-num').innerText = u.number || '';
                     
                     const ninjaUrl = (id === myId && myRole !== "observer") 
-                        ? `https://vdo.ninja/?push=${u.streamId}&webcam&as=1&autoconnect&facing=front&m&pro&cover=1`
+                        ? `https://vdo.ninja/?push=${u.streamId}&webcam&as=1&autoconnect&facing=front&ad=1&m&pro&cover=1`
                         : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&clean&cover=1`;
                     
                     const iframe = slot.querySelector('iframe');
@@ -191,18 +202,14 @@
                 const u = users[id];
                 const row = document.createElement('div');
                 row.className = 'player-row';
-                
-                // ЗАВДАННЯ 1: Прибрати № для себе/хоста
                 const isMeOrHost = (u.role === 'host' || id === myId);
-                const manualNumBtn = isMeOrHost ? '' : `<button onclick="setManualNumber('${id}')" style="background:#444; padding:2px 8px; font-size:10px; margin-left:5px;">№</button>`;
-                
-                let controls = isMeOrHost ? `<span style="font-size:10px; color:#666; margin-top:5px; display:block;">SYSTEM ROLE</span>` : `
-                    <div style="display:flex; gap:5px; margin-top:8px;">
-                        <button onclick="toggleLife('${id}')" style="flex:1; font-size:11px;">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
-                        <button onclick="kickPlayer('${id}')" style="background:#444; font-size:11px;">КІК</button>
+                const manualNumBtn = isMeOrHost ? '' : `<button onclick="setManualNumber('${id}')" style="background:#444; border:none; color:white; padding:4px 8px; border-radius:4px; font-size:10px; margin-left:8px;">№</button>`;
+                let controls = isMeOrHost ? `<div style="font-size:10px; color:#555; margin-top:8px;">ЦЕ ТИ / ВЕДУЧИЙ</div>` : `
+                    <div style="display:flex; gap:6px; margin-top:10px;">
+                        <button class="btn" onclick="toggleLife('${id}')" style="flex:2; padding:6px; font-size:10px;">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
+                        <button class="btn" onclick="kickPlayer('${id}')" style="flex:1; background:#444; padding:6px; font-size:10px;">КІК</button>
                     </div>`;
-
-                row.innerHTML = `<div style="display:flex; justify-content:space-between;"><b>${u.number || '??'}. ${u.name}</b> ${manualNumBtn}</div>${controls}`;
+                row.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><b>${u.number || '??'}. ${u.name}</b> ${manualNumBtn}</div>${controls}`;
                 list.appendChild(row);
             });
         }
@@ -214,7 +221,7 @@
         window.toggleLife = id => {
             db.ref(`rooms/${ROOM_NAME}/users/${id}/status`).once('value', s => db.ref(`rooms/${ROOM_NAME}/users/${id}/status`).set(s.val()==='dead'?'alive':'dead'));
         };
-        window.kickPlayer = id => confirm("Kick?") && db.ref(`rooms/${ROOM_NAME}/users/${id}`).remove();
+        window.kickPlayer = id => confirm("Видалити гравця?") && db.ref(`rooms/${ROOM_NAME}/users/${id}`).remove();
         window.assignNumbers = () => {
             db.ref(`rooms/${ROOM_NAME}/users`).once('value', s => {
                 const d = s.val(); if(!d) return;
@@ -223,7 +230,7 @@
                 ids.forEach((id, i) => db.ref(`rooms/${ROOM_NAME}/users/${id}/number`).set(nums[i]));
             });
         };
-        function exitGame() { confirm("Exit?") && db.ref(`rooms/${ROOM_NAME}/users/${myId}`).remove().then(()=>location.reload()); }
+        function exitGame() { confirm("Вийти з міста?") && db.ref(`rooms/${ROOM_NAME}/users/${myId}`).remove().then(()=>location.reload()); }
     </script>
 </body>
 </html>
