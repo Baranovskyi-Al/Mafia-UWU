@@ -155,8 +155,8 @@
                     slot.querySelector('.slot-num').innerText = (u.role === 'host') ? '' : (u.number || '');
                     
                     const ninjaUrl = (id === myId && myRole !== "observer") 
-    ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro&cover=1&codec=h264&tune=zerolatency`
-    : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean&cover=1&codec=h264&buffer=0`;
+    ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro&cover=1&codec=h264&outboundvideobitrate=1500&lowlatency`
+    : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean&cover=1&codec=h264&videobitrate=1500&lowlatency&buffer=0&sync=0`;
                     
                     const iframe = slot.querySelector('iframe');
                     if (iframe.src !== ninjaUrl) iframe.src = ninjaUrl;
