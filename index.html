@@ -3,51 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>МАФІЯ - STABLE v2.8</title>
-    
+    <title>МАФІЯ - STABLE v3.0</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230a0a0a' stroke='%23d32f2f' stroke-width='4'/><path d='M25 65 h50 v5 a5 5 0 0 1 -5 5 h-40 a5 5 0 0 1 -5 -5 z' fill='%23d32f2f'/><path d='M35 65 v-20 c0-10 10-15 15-15 s15 5 15 15 v20' fill='%23d32f2f'/><rect x='35' y='55' width='30' height='5' fill='%23000'/></svg>">
-
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #d32f2f; --blue: #1976d2; --border: #333; }
         body { margin: 0; background: var(--bg); color: #eee; font-family: 'Segoe UI', Roboto, sans-serif; display: flex; height: 100vh; overflow: hidden; }
-        
         #video-grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); grid-auto-rows: 1fr; gap: 12px; padding: 12px; background: #000; align-content: start; overflow-y: auto; }
-        .video-slot { background: #111; border: 2px solid var(--border); border-radius: 12px; position: relative; overflow: hidden; aspect-ratio: 16 / 9; box-shadow: 0 4px 15px rgba(0,0,0,0.5); order: 99; }
-        
-        /* Ефект при смерті */
+        .video-slot { background: #111; border: 2px solid var(--border); border-radius: 12px; position: relative; overflow: hidden; aspect-ratio: 16 / 9; order: 99; }
         .video-slot.dead { border-color: var(--accent); }
         .video-slot.dead iframe { opacity: 0.5; filter: grayscale(0.8); }
-
-        /* Великий напис ВБИТО */
-        .killed-overlay { 
-            position: absolute; inset: 0; 
-            display: none; align-items: center; justify-content: center; 
-            z-index: 20; pointer-events: none; /* Пропускає кліки на кнопки відео */
-            color: var(--accent); font-size: 60px; font-weight: 900; 
-            text-transform: uppercase; text-shadow: 0 0 20px #000, 2px 2px 5px #000;
-            letter-spacing: 5px; transform: rotate(-10deg);
-        }
+        .killed-overlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; z-index: 20; pointer-events: none; color: var(--accent); font-size: 60px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 20px #000; letter-spacing: 5px; transform: rotate(-10deg); }
         .video-slot.dead .killed-overlay { display: flex; }
-
-        iframe { width: 100%; height: 100%; border: none; background: #000; transition: all 0.3s ease; }
-        
+        iframe { width: 100%; height: 100%; border: none; background: #000; }
         .player-label { position: absolute; top: 40px; left: 10px; background: rgba(0,0,0,0.8); padding: 4px 12px; border-radius: 6px; z-index: 10; font-size: 13px; border: 1px solid #444; font-weight: bold; pointer-events: none; }
         .slot-num { position: absolute; top: 5px; right: 15px; font-size: 40px; font-weight: 900; color: rgba(255,255,255,0.07); z-index: 5; pointer-events: none; }
-
         #host-panel { width: 340px; background: var(--panel); border-left: 2px solid #222; padding: 20px; display: none; flex-direction: column; box-sizing: border-box; }
         .player-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; padding: 12px; background: #222; border-radius: 8px; border-left: 4px solid #444; }
-        .player-row.is-dead { border-left-color: var(--accent); }
-
         #login-screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .login-box { background: var(--panel); padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #333; width: 340px; }
-        
         input { width: 100%; padding: 14px; margin: 10px 0; background: #1a1a1a; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; }
         button { padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 5px; }
         .login-box button, #host-panel button { width: 100%; } 
-        
         #exit-btn { position: fixed; bottom: 20px; right: 50px; z-index: 100; padding: 10px 25px; background: #333; color: #fff; border: none; border-radius: 8px; cursor: pointer; display: none; font-size: 12px; width: auto; }
     </style>
 </head>
@@ -95,10 +73,10 @@
             const rawName = document.getElementById('userName').value.trim();
             const pass = document.getElementById('roomPass').value.trim();
             if (!rawName) return alert("Введіть ім'я");
-
-            if (/[а-яА-ЯіІїЇєЄґҐ]/.test(rawName)) return alert("Використовуйте тільки латиницю!");
+            if (/[а-яА-ЯіІїЇєЄґҐ]/.test(rawName)) return alert("Тільки латиниця!");
 
             myId = "p_" + rawName.toLowerCase().replace(/\s+/g, '_');
+
             if (pass === PASSWORDS.host) myRole = "host";
             else if (pass === PASSWORDS.player) myRole = "player";
             else if (pass === PASSWORDS.observer) myRole = "observer";
@@ -106,12 +84,18 @@
 
             document.getElementById('login-screen').style.display = 'none';
             if (myRole === "host") document.getElementById('host-panel').style.display = 'flex';
-            if (myRole !== "observer") document.getElementById('exit-btn').style.display = 'block';
-
             if (myRole !== "observer") {
+                document.getElementById('exit-btn').style.display = 'block';
                 const userRef = db.ref(`rooms/${ROOM_NAME}/users/${myId}`);
                 userRef.set({ name: rawName, status: "alive", streamId: myId + "_stream", number: "", role: myRole });
                 userRef.onDisconnect().remove();
+                
+                userRef.on('value', (snap) => {
+                    if (!snap.exists() && myRole !== "host") {
+                        alert("Вас виключено!");
+                        location.reload();
+                    }
+                });
             }
             syncGrid();
         }
@@ -136,23 +120,15 @@
                         slot.innerHTML = `<div class="slot-num"></div><div class="player-label"></div><div class="killed-overlay">ВБИТО</div><iframe allow="camera;microphone;fullscreen;display-capture;autoplay"></iframe>`;
                         grid.appendChild(slot);
                     }
-
                     slot.style.order = (u.role === 'host') ? 100 : (u.number || 99);
                     u.status === 'dead' ? slot.classList.add('dead') : slot.classList.remove('dead');
-
-                    const hostPrefix = (u.role === 'host') ? "[Ведучий] " : "";
-                    slot.querySelector('.player-label').innerText = `${hostPrefix}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
+                    slot.querySelector('.player-label').innerText = `${(u.role === 'host') ? '[Ведучий] ' : ''}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
                     slot.querySelector('.slot-num').innerText = (u.role === 'host') ? '' : (u.number || '');
-
-                    let ninjaUrl = "";
-                    if (id === myId && myRole !== "observer") {
-                        // Для себе НЕ додаємо &clean, щоб бачити кнопки муту
-                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro`;
-                    } else {
-                        // Для інших додаємо &clean, щоб не було зайвих кнопок
-                        ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean`;
-                    }
-
+                    
+                    const ninjaUrl = (id === myId && myRole !== "observer") 
+                        ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro`
+                        : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean`;
+                    
                     const iframe = slot.querySelector('iframe');
                     if (iframe.src !== ninjaUrl) iframe.src = ninjaUrl;
                 });
@@ -165,13 +141,12 @@
             Object.keys(users).sort((a,b) => (users[a].number || 99) - (users[b].number || 99)).forEach(id => {
                 const u = users[id];
                 const row = document.createElement('div');
-                row.className = `player-row ${u.status === 'dead' ? 'is-dead' : ''}`;
-                const controls = (u.role === 'host') ? `<span style="font-size:10px; color:#777;">ВЕДУЧИЙ</span>` : `
-                    <div class="admin-btns">
-                        <button onclick="toggleLife('${id}', '${u.status}')" style="width:100%">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
+                row.className = 'player-row';
+                row.innerHTML = `<span><b>${u.number || (u.role === 'host' ? '★' : '??')}.</b> ${u.name}</span>
+                    <div style="display:flex; gap:5px; margin-top:5px;">
+                        <button onclick="toggleLife('${id}')" style="width:100%">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
                         <button onclick="kickPlayer('${id}')" style="background:#444; width:60px; font-size:10px;">КІК</button>
                     </div>`;
-                row.innerHTML = `<span><b>${u.number || (u.role === 'host' ? '★' : '??')}.</b> ${u.name}</span>${controls}`;
                 list.appendChild(row);
             });
         }
@@ -182,7 +157,11 @@
             });
         };
 
-        window.kickPlayer = id => confirm("Видалити гравця?") && db.ref(`rooms/${ROOM_NAME}/users/${id}`).remove();
+        window.kickPlayer = id => {
+            if(confirm("Видалити гравця?")) {
+                db.ref(`rooms/${ROOM_NAME}/users/${id}`).remove();
+            }
+        };
 
         window.assignNumbers = () => {
             db.ref(`rooms/${ROOM_NAME}/users`).once('value', s => {
@@ -194,7 +173,7 @@
             });
         };
 
-        function exitGame() { confirm("Вийти з гри?") && db.ref(`rooms/${ROOM_NAME}/users/${myId}`).remove().then(() => location.reload()); }
+        function exitGame() { confirm("Вийти?") && db.ref(`rooms/${ROOM_NAME}/users/${myId}`).remove().then(() => location.reload()); }
     </script>
 </body>
 </html>
