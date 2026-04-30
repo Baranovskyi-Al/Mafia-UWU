@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>МАФІЯ - STABLE v3.3</title>
+    <title>МАФІЯ - STABLE v3.4</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230a0a0a' stroke='%23d32f2f' stroke-width='4'/><path d='M25 65 h50 v5 a5 5 0 0 1 -5 5 h-40 a5 5 0 0 1 -5 -5 z' fill='%23d32f2f'/><path d='M35 65 v-20 c0-10 10-15 15-15 s15 5 15 15 v20' fill='%23d32f2f'/><rect x='35' y='55' width='30' height='5' fill='%23000'/></svg>">
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -21,8 +21,9 @@
         
         .killed-overlay { 
             position: absolute; inset: 0; display: none; align-items: center; justify-content: center; 
-            z-index: 20; pointer-events: none; color: var(--accent); font-size: 60px; font-weight: 900; 
-            text-transform: uppercase; text-shadow: 0 0 20px #000; letter-spacing: 5px; transform: rotate(-10deg);
+            z-index: 20; pointer-events: none; color: var(--accent); font-size: 35px; font-weight: 900; 
+            text-transform: uppercase; text-shadow: 0 0 20px #000; letter-spacing: 2px; transform: rotate(-10deg);
+            text-align: center; padding: 10px;
         }
         .video-slot.dead .killed-overlay { display: flex; }
 
@@ -43,9 +44,7 @@
         .login-box button, #host-panel button { width: 100%; } 
         #exit-btn { position: fixed; bottom: 20px; right: 50px; z-index: 100; padding: 10px 25px; background: #333; color: #fff; border: none; border-radius: 8px; cursor: pointer; display: none; font-size: 12px; width: auto; }
         
-        /* Стиль для кнопки редагування номера */
         .num-edit-btn { background: #444; border-radius: 4px; padding: 2px 6px; font-size: 10px; margin-left: 10px; cursor: pointer; display: inline-block; }
-        .num-edit-btn:hover { background: var(--blue); }
     </style>
 </head>
 <body>
@@ -82,6 +81,15 @@
 
         const ROOM_NAME = "Mafia_Ninja_Ultimate_2026";
         const PASSWORDS = { host: "321", player: "123", observer: "333" };
+
+        // Масив прикольних статусів для вбитих
+        const deathPhrases = [
+            "ВБИТО НЕЗАКОННО", "НЕСПРАВЕДЛИВО ЗАВАЛЕНО", "ВАЛЯЄТЬСЯ В КАНАВІ",
+            "ГОДУЄ ЧЕРВ’ЯКІВ", "ВІДПОЧИВАЄ ВІЧНО", "СПИТЬ З РИБАМИ",
+            "МАФІЯ НЕ ПРОБАЧАЄ", "ЧИСТО ВИПАДКОВО", "ВИПАВ З ГРИ",
+            "ГРУ ЗАКІНЧЕНО", "ПРОСТО НЕ ПОВЕЗЛО", "БІЛЬШЕ НЕ ГОВОРИТЬ",
+            "З’ЇДЕНИЙ ЩУРАМИ", "ПОМИЛКА СИСТЕМИ", "GAME OVER"
+        ];
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -140,7 +148,21 @@
                         grid.appendChild(slot);
                     }
                     slot.style.order = (u.role === 'host') ? 100 : (u.number || 99);
-                    u.status === 'dead' ? slot.classList.add('dead') : slot.classList.remove('dead');
+                    
+                    // Логіка випадкової фрази
+                    const overlay = slot.querySelector('.killed-overlay');
+                    if (u.status === 'dead') {
+                        slot.classList.add('dead');
+                        if (!slot.dataset.currentPhrase) {
+                            const phrase = deathPhrases[Math.floor(Math.random() * deathPhrases.length)];
+                            slot.dataset.currentPhrase = phrase;
+                            overlay.innerText = phrase;
+                        }
+                    } else {
+                        slot.classList.remove('dead');
+                        delete slot.dataset.currentPhrase;
+                    }
+
                     slot.querySelector('.player-label').innerText = `${(u.role === 'host') ? '[Ведучий] ' : ''}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
                     slot.querySelector('.slot-num').innerText = (u.role === 'host') ? '' : (u.number || '');
                     
@@ -161,32 +183,20 @@
                 const u = users[id];
                 const row = document.createElement('div');
                 row.className = 'player-row';
-                
-                let controls = '';
-                if (u.role === 'host' || id === myId) {
-                    controls = `<span style="font-size:10px; color:#777;">${id === myId ? 'ЦЕ ТИ' : 'ВЕДУЧИЙ'}</span>`;
-                } else {
-                    controls = `
-                        <div style="display:flex; gap:5px; margin-top:5px;">
-                            <button onclick="toggleLife('${id}')" style="width:100%">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
-                            <button onclick="kickPlayer('${id}')" style="background:#444; width:60px; font-size:10px;">КІК</button>
-                        </div>`;
-                }
-
-                // Додано можливість ручного редагування номера
+                let controls = (u.role === 'host' || id === myId) ? `<span style="font-size:10px; color:#777;">${id === myId ? 'ЦЕ ТИ' : 'ВЕДУЧИЙ'}</span>` : `
+                    <div style="display:flex; gap:5px; margin-top:5px;">
+                        <button onclick="toggleLife('${id}')" style="width:100%">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
+                        <button onclick="kickPlayer('${id}')" style="background:#444; width:60px; font-size:10px;">КІК</button>
+                    </div>`;
                 const numDisplay = u.number || (u.role === 'host' ? '★' : '??');
-                const manualNumBtn = (u.role !== 'host') ? `<span class="num-edit-btn" onclick="setManualNumber('${id}')">№</span>` : '';
-
-                row.innerHTML = `<span><b>${numDisplay}.</b> ${u.name} ${manualNumBtn}</span>${controls}`;
+                row.innerHTML = `<span><b>${numDisplay}.</b> ${u.name} <span class="num-edit-btn" onclick="setManualNumber('${id}')">№</span></span>${controls}`;
                 list.appendChild(row);
             });
         }
 
-        // Нова функція для ручного призначення номера
         window.setManualNumber = id => {
-            const newNum = prompt("Введіть номер для гравця (напр. 05 або 12):");
+            const newNum = prompt("Введіть номер:");
             if (newNum !== null) {
-                // Форматування: додаємо нуль попереду, якщо це одна цифра, і обрізаємо до 2 знаків
                 const formattedNum = newNum.padStart(2, '0').slice(-2);
                 db.ref(`rooms/${ROOM_NAME}/users/${id}/number`).set(formattedNum);
             }
