@@ -147,10 +147,11 @@
                     const hostPrefix = (u.role === 'host') ? "[Ведучий] " : "";
                     const labelText = `${hostPrefix}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
 
-                    // КЛЮЧОВІ ЗМІНИ ТУТ: Посилений автостарт
+                    // --- ЖОРСТКИЙ АВТОСТАРТ (БЕЗ SCREEN SHARE) ---
                     let ninjaUrl = "";
                     if (id === myId && myRole !== "observer") {
-                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&vd=1&ad=1&autostart&as=1&autoconnect&m&pro`;
+                        // vd=1 (відео №1), ad=1 (аудіо №1), ss=0 (ВИМКНУТИ екран вибору)
+                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&vd=1&ad=1&ss=0&autostart&as=1&m&pro`;
                     } else {
                         ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1`;
                     }
@@ -162,7 +163,6 @@
                             <iframe src="${ninjaUrl}" allow="camera;microphone;fullscreen;display-capture;autoplay"></iframe>
                         `;
                     } else {
-                        // Оновлюємо лейбли без перезавантаження фрейму, щоб не скидати камеру
                         slot.querySelector('.player-label').innerText = labelText;
                         slot.querySelector('.slot-num').innerText = (u.role === 'host') ? '' : (u.number || '');
                     }
