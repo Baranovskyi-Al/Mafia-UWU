@@ -121,11 +121,7 @@
             db.ref(`rooms/${ROOM_NAME}/users`).on('value', (snapshot) => {
                 const users = snapshot.val() || {};
                 const grid = document.getElementById('video-grid');
-                const ninjaUrl = (id === myId && myRole !== "observer") 
-    ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro&cover=1`
-    : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean&cover=1&buffer=200&sync&vb=1500`;
                 if (myRole === "host") updateAdminPanel(users);
-
                 Array.from(grid.children).forEach(child => {
                     if (!users[child.id.replace('slot-', '')]) child.remove();
                 });
@@ -159,8 +155,8 @@
                     slot.querySelector('.slot-num').innerText = (u.role === 'host') ? '' : (u.number || '');
                     
                     const ninjaUrl = (id === myId && myRole !== "observer") 
-                        ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro&cover=1`
-                        : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean&cover=1`;
+    ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro&cover=1`
+    : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean&cover=1&buffer=200&sync&vb=1500`;
                     
                     const iframe = slot.querySelector('iframe');
                     if (iframe.src !== ninjaUrl) iframe.src = ninjaUrl;
