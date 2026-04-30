@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mafia Online Ultimate</title>
+    <title>Mafia Online Control</title>
     
     <script src="https://meet.jit.si/external_api.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -67,7 +67,7 @@
         .btn-random { background: var(--blue-action); width: 100%; padding: 12px; margin-bottom: 20px; }
         .btn-exit { background: var(--gray-btn); width: 100%; margin-top: auto; padding: 10px; }
 
-        .dead-overlay { filter: grayscale(1) brightness(0.2); pointer-events: none; }
+        .dead-overlay { filter: grayscale(1) brightness(0.2); pointer-events: none; transition: 0.5s; }
         #death-msg { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             color: #ff3333; font-size: 4rem; font-weight: bold; display: none; 
@@ -85,7 +85,7 @@
 
     <div id="login-screen">
         <div class="login-box">
-            <h2>MAFIA ONLINE</h2>
+            <h2>МАФІЯ</h2>
             <input type="text" id="userName" placeholder="Твоє ім'я">
             <input type="password" id="roomPass" placeholder="Пароль доступу">
             <button onclick="initGame()">УВІЙТИ</button>
@@ -99,27 +99,27 @@
     </div>
 
     <div id="host-panel">
-        <h3 style="margin-top: 0; text-align: center;">КЕРУВАННЯ</h3>
+        <h3 style="margin-top: 0; text-align: center;">Панель Ведучого</h3>
         <button class="btn-action btn-random" onclick="assignNumbers()">🎲 РОЗДАТИ НОМЕРИ</button>
         <div id="players-list"></div>
         <button class="btn-action btn-exit" onclick="leaveGame()">🚪 ВИЙТИ З ГРИ</button>
     </div>
 
     <script>
-        // === ВСТАВ СВІЙ CONFIG ТУТ ===
+        // === ВСТАВ СВІЙ CONFIG ===
         const firebaseConfig = {
             apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
-    authDomain: "mafia-site-6f939.firebaseapp.com",
-    databaseURL: "https://mafia-site-6f939-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "mafia-site-6f939",
-    storageBucket: "mafia-site-6f939.firebasestorage.app",
-    messagingSenderId: "78605254170",
-    appId: "1:78605254170:web:b47e5b500ecffe4f2d1ba3",
-    measurementId: "G-CL90SPXY5W"
+            authDomain: "mafia-site-6f939.firebaseapp.com",
+            databaseURL: "https://mafia-site-6f939-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "mafia-site-6f939",
+            storageBucket: "mafia-site-6f939.firebasestorage.app",
+            messagingSenderId: "78605254170",
+            appId: "1:78605254170:web:b47e5b500ecffe4f2d1ba3",
+            measurementId: "G-CL90SPXY5W"
         };
 
-        const PASSWORDS = { player: "123", host: "654321", observer: "333" };
-        const ROOM_NAME = "Mafia_Night_Sumy_2026"; 
+        const PASSWORDS = { player: "123", host: "321", observer: "333" };
+        const ROOM_NAME = "МАФІЯ"; 
         const JITSI_DOMAIN = 'jitsi.belnet.be'; 
 
         firebase.initializeApp(firebaseConfig);
@@ -151,7 +151,6 @@
                 interfaceConfigOverwrite: { TOOLBAR_BUTTONS: jitsiButtons, SHOW_JITSI_WATERMARK: false }
             });
 
-            // Чекаємо повного завантаження Jitsi
             api.addEventListener('videoConferenceJoined', () => {
                 if (role === "host") {
                     document.getElementById('host-panel').style.display = 'flex';
@@ -175,12 +174,12 @@
                 Object.keys(data).forEach(id => {
                     const user = data[id];
                     const isDead = user.status === 'dead';
-                    const prefix = user.number ? `[${user.number}.] ` : '';
+                    const prefix = user.number ? `${user.number}. ` : '';
                     listDiv.innerHTML += `
                         <div class="player-card ${isDead ? 'dead' : ''}">
                             <span>${isDead ? '💀' : '👤'} ${prefix}${user.name}</span>
                             <button class="btn-action ${isDead ? 'btn-revive' : 'btn-kill'}" onclick="setStatus('${id}', '${isDead ? 'alive' : 'dead'}')">
-                                ${isDead ? 'ОЖИТИ' : 'ВБИТИ'}
+                                ${isDead ? 'ОЖИВИТИ' : 'ВБИТИ'}
                             </button>
                         </div>`;
                 });
@@ -199,6 +198,14 @@
             });
         };
 
+        // ФУНКЦІЯ ХАРД-М'ЮТУ
+        function forceMute() {
+            if (api) {
+                api.executeCommand('setAudioMuted', true);
+                api.executeCommand('setVideoMuted', true);
+            }
+        }
+
         function runPlayerLogic(originalName) {
             myId = "user_" + Math.random().toString(36).substr(2, 9);
             const userRef = db.ref(`rooms/${ROOM_NAME}/users/${myId}`);
@@ -207,13 +214,10 @@
             userRef.set({ name: originalName, status: 'alive' });
             userRef.onDisconnect().remove();
 
-            // WATCHDOG: Постійно гасимо медіа, якщо гравець вбитий
+            // WATCHDOG: Циклічно гасимо медіа, поки гравець вбитий
             setInterval(() => {
-                if (isDeadLocal && api) {
-                    api.executeCommand('setAudioMuted', true);
-                    api.executeCommand('setVideoMuted', true);
-                }
-            }, 1000); // Раз на секунду
+                if (isDeadLocal) forceMute();
+            }, 2000);
 
             userRef.on('value', (snapshot) => {
                 const data = snapshot.val();
@@ -226,12 +230,11 @@
                 const prefix = data.number ? `[${data.number}.] ` : '';
 
                 if (isDead) {
-                    // Агресивне вимкнення
-                    setTimeout(() => {
-                        api.executeCommand('setAudioMuted', true);
-                        api.executeCommand('setVideoMuted', true);
-                        api.executeCommand('displayName', `${prefix}ВБИТО ${originalName}`);
-                    }, 500);
+                    // Команди з невеликим розривом, щоб API Jitsi встигло їх з'їсти
+                    api.executeCommand('displayName', `${prefix}ВБИТО ${originalName}`);
+                    setTimeout(() => api.executeCommand('setAudioMuted', true), 500);
+                    setTimeout(() => api.executeCommand('setVideoMuted', true), 1000);
+                    
                     container.classList.add('dead-overlay');
                     msg.style.display = 'block';
                 } else {
@@ -241,10 +244,10 @@
                 }
             });
 
-            // Слухаємо намагання ввімкнути вручну
+            // Слухаємо спроби вручну розблокуватись
             api.addEventListeners({
-                audioMuteStatusChanged: (e) => { if (isDeadLocal && !e.muted) api.executeCommand('setAudioMuted', true); },
-                videoMuteStatusChanged: (e) => { if (isDeadLocal && !e.muted) api.executeCommand('setVideoMuted', true); }
+                audioMuteStatusChanged: (e) => { if (isDeadLocal && !e.muted) forceMute(); },
+                videoMuteStatusChanged: (e) => { if (isDeadLocal && !e.muted) forceMute(); }
             });
         }
 
