@@ -87,7 +87,7 @@
             "ЗАМОЧЕНО Й ОБПІСЯНО", "ЧИСТО ВИПАДКОВО В'ЄБАЛИ", "ЙШОВ, ЙШОВ І ВПАВ",
             "ВЖАЛЕНО БДЖІЛКОЮ", "ПРОСТО НЕ ПОВЕЗЛО", "БІЛЬШЕ НЕ ГОВОРИТЬ",
             "З’ЇДЕНИЙ ЩУРАМИ", "ВБИТО ЗА ПОГАНЕ КУНІ", "НОСОЧОК БЛЯЯЯ!!!", "ПОВАГИ НАТІ НЕДОСТАТНЬО!", "ЦЕ ГГ...",
-            "ВБИЛИ Й НАДРУГАЛИСЬ", "ВБИЛИ ЗА ВЕЛИКИЙ ХУЙ", "СМЕРТЬ ПРИЙШЛА ПІДЧАС UWU", "НОСОЧОК БЛЯЯЯ!!!", "ЦЕ ВСЕ НОУБАДІ!"
+            "ВБИЛИ Й НАДРУГАЛИСЬ", "ВБИЛИ ЗА ВЕЛИКИЙ ХУЙ", "СМЕРТЬ ПРИЙШЛА ПІДЧАС UWU", "НЕ ПЕРЕЖИВ ХТИВІСТЬ ЛІРИКИ", "ЦЕ ВСЕ НОУБАДІ!"
         ];
 
         firebase.initializeApp(firebaseConfig);
@@ -173,8 +173,8 @@
                 const row = document.createElement('div');
                 row.className = 'player-row';
                 const isMeOrHost = (u.role === 'host' || id === myId);
-                const manualNumBtn = isMeOrHost ? '' : `<span class="num-edit-btn" onclick="setManualNumber('${id}')">№</span>`;
-                let controls = isMeOrHost ? `<span style="font-size:10px; color:#777;">ЦЕ ТИ / ВЕДУЧИЙ</span>` : `
+                const manualNumBtn = isMeOrHost ? '' : `<span class="num-edit-btn" onclick="setManualNumber('${id}')">Присвоїти номер</span>`;
+                let controls = isMeOrHost ? `<span style="font-size:10px; color:#777;">ВЕДУЧИЙ</span>` : `
                     <div style="display:flex; gap:5px; margin-top:5px;">
                         <button onclick="toggleLife('${id}')" style="width:100%">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
                         <button onclick="kickPlayer('${id}')" style="background:#444; width:60px; font-size:10px;">КІК</button>
