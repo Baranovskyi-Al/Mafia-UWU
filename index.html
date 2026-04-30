@@ -33,9 +33,8 @@
         
         input { width: 100%; padding: 14px; margin: 10px 0; background: #1a1a1a; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; }
         
-        /* Стилі кнопок */
         button { padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 5px; }
-        .login-box button, #host-panel button { width: 100%; } /* Кнопки в панелях на всю ширину */
+        .login-box button, #host-panel button { width: 100%; } 
         
         /* Кнопка вийти - фікс розміру */
         #exit-btn { 
@@ -69,7 +68,7 @@
     </div>
 
     <script>
-        // --- КОНФІГ
+        // --- КОНФІГ ---
         const firebaseConfig = {
             apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
             authDomain: "mafia-site-6f939.firebaseapp.com",
@@ -104,7 +103,6 @@
             document.getElementById('login-screen').style.display = 'none';
             if (myRole === "host") document.getElementById('host-panel').style.display = 'flex';
             
-            // Кнопка виходу доступна всім крім глядача
             if (myRole !== "observer") document.getElementById('exit-btn').style.display = 'block';
 
             if (myRole !== "observer") {
@@ -156,14 +154,14 @@
                     if (u.status === 'dead') slot.classList.add('dead');
                     else slot.classList.remove('dead');
 
-                    const labelText = `${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
+                    // --- ТІЛЬКИ ЦЯ ПРАВКА: Додаємо префікс для ведучого ---
+                    const hostPrefix = (u.role === 'host') ? "[Ведучий] " : "";
+                    const labelText = `${hostPrefix}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
 
                     let ninjaUrl = "";
                     if (id === myId && myRole !== "observer") {
-                        // ПУШ: додано &audiodevice=1 та прибрано зайві обмеження для мікрофону
                         ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&autostart&m&pro&as=1&facing=front&ad=1`;
                     } else {
-                        // ПЕРЕГЛЯД: додано &audiodevice=1 для примусового підключення звуку
                         ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1`;
                     }
 
