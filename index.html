@@ -156,7 +156,7 @@
                     
                     const ninjaUrl = (id === myId && myRole !== "observer") 
     ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro&cover=1`
-    : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean&cover=1&vb=1500`;
+    : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean&cover=1&vb=1000&buffer=200&sync`;
                     
                     const iframe = slot.querySelector('iframe');
                     if (iframe.src !== ninjaUrl) iframe.src = ninjaUrl;
