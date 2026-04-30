@@ -31,7 +31,6 @@
         .login-box { background: var(--panel); padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #333; width: 340px; }
         
         input { width: 100%; padding: 14px; margin: 10px 0; background: #1a1a1a; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; }
-        
         button { padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 5px; }
         .login-box button, #host-panel button { width: 100%; } 
         
@@ -88,7 +87,6 @@
         async function startApp() {
             const rawName = document.getElementById('userName').value.trim();
             const pass = document.getElementById('roomPass').value.trim();
-            
             if (!rawName) return alert("Введіть ім'я");
             myId = "p_" + rawName.toLowerCase().replace(/\s+/g, '_');
 
@@ -111,7 +109,6 @@
                     role: myRole
                 });
                 userRef.onDisconnect().remove();
-
                 userRef.on('value', (snap) => {
                     if (!snap.exists() && myRole !== "host") {
                         alert("Вас було видалено");
@@ -119,7 +116,6 @@
                     }
                 });
             }
-
             syncGrid();
         }
 
@@ -127,7 +123,6 @@
             db.ref(`rooms/${ROOM_NAME}/users`).on('value', (snapshot) => {
                 const users = snapshot.val() || {};
                 const grid = document.getElementById('video-grid');
-                
                 if (myRole === "host") updateAdminPanel(users);
 
                 Array.from(grid.children).forEach(child => {
@@ -138,7 +133,6 @@
                 Object.keys(users).forEach(id => {
                     const u = users[id];
                     let slot = document.getElementById(`slot-${id}`);
-
                     if (!slot) {
                         slot = document.createElement('div');
                         slot.id = `slot-${id}`;
@@ -153,12 +147,11 @@
                     const hostPrefix = (u.role === 'host') ? "[Ведучий] " : "";
                     const labelText = `${hostPrefix}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
 
+                    // КЛЮЧОВІ ЗМІНИ ТУТ: Посилений автостарт
                     let ninjaUrl = "";
                     if (id === myId && myRole !== "observer") {
-                        // ПУШ:vd=1 обирає камеру, ad=1 мікрофон, as=1 автостарт. Додано &clean.
-                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&autostart&as=1&vd=1&ad=1&label=${u.name}&facing=front&m&pro`;
+                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&vd=1&ad=1&autostart&as=1&autoconnect&m&pro`;
                     } else {
-                        // ПЕРЕГЛЯД
                         ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1`;
                     }
 
@@ -169,6 +162,7 @@
                             <iframe src="${ninjaUrl}" allow="camera;microphone;fullscreen;display-capture;autoplay"></iframe>
                         `;
                     } else {
+                        // Оновлюємо лейбли без перезавантаження фрейму, щоб не скидати камеру
                         slot.querySelector('.player-label').innerText = labelText;
                         slot.querySelector('.slot-num').innerText = (u.role === 'host') ? '' : (u.number || '');
                     }
@@ -183,13 +177,11 @@
                 const u = users[id];
                 const row = document.createElement('div');
                 row.className = `player-row ${u.status === 'dead' ? 'is-dead' : ''}`;
-                
                 const controls = (u.role === 'host') ? `<span style="font-size:10px; color:#777;">ВЕДУЧИЙ</span>` : `
                     <div class="admin-btns">
                         <button onclick="toggleLife('${id}', '${u.status}')" style="width:100%">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
                         <button onclick="kickPlayer('${id}')" style="background:#444; width:60px; font-size:10px;">КІК</button>
                     </div>`;
-
                 row.innerHTML = `<span><b>${u.number || (u.role === 'host' ? '★' : '??')}.</b> ${u.name}</span>${controls}`;
                 list.appendChild(row);
             });
