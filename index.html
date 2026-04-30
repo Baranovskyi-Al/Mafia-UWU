@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>МАФІЯ - ULTIMATE 2026</title>
+    <title>МАФІЯ - FINAL 2026</title>
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230a0a0a' stroke='%23d32f2f' stroke-width='4'/><path d='M25 65 h50 v5 a5 5 0 0 1 -5 5 h-40 a5 5 0 0 1 -5 -5 z' fill='%23d32f2f'/><path d='M35 65 v-20 c0-10 10-15 15-15 s15 5 15 15 v20' fill='%23d32f2f'/><rect x='35' y='55' width='30' height='5' fill='%23000'/></svg>">
 
@@ -17,40 +17,34 @@
         #video-grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); grid-auto-rows: 1fr; gap: 12px; padding: 12px; background: #000; align-content: start; overflow-y: auto; }
         .video-slot { background: #111; border: 2px solid var(--border); border-radius: 12px; position: relative; overflow: hidden; aspect-ratio: 16 / 9; box-shadow: 0 4px 15px rgba(0,0,0,0.5); order: 99; }
         .video-slot.dead { border-color: var(--accent); opacity: 0.4; filter: grayscale(1); }
-        iframe { width: 100%; height: 100%; border: none; background: #000; pointer-events: none; } /* pointer-events: none ховає взаємодію з фреймом */
         
-        /* Ім'я - спустили на 60px */
-        .player-label { position: absolute; top: 60px; left: 10px; background: rgba(0,0,0,0.85); padding: 5px 14px; border-radius: 6px; z-index: 10; font-size: 13px; border: 1px solid #444; font-weight: bold; pointer-events: none; }
+        /* ПОМИЛКА БУЛА ТУТ: pointer-events має бути auto */
+        iframe { width: 100%; height: 100%; border: none; background: #000; pointer-events: auto; } 
+        
+        /* Ім'я - спустили нижче */
+        .player-label { position: absolute; top: 70px; left: 15px; background: rgba(0,0,0,0.85); padding: 6px 15px; border-radius: 6px; z-index: 10; font-size: 13px; border: 1px solid #444; font-weight: bold; pointer-events: none; letter-spacing: 0.5px; }
         .slot-num { position: absolute; top: 5px; right: 15px; font-size: 40px; font-weight: 900; color: rgba(255,255,255,0.07); z-index: 5; pointer-events: none; }
 
         #host-panel { width: 340px; background: var(--panel); border-left: 2px solid #222; padding: 20px; display: none; flex-direction: column; box-sizing: border-box; }
         .player-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; padding: 12px; background: #222; border-radius: 8px; border-left: 4px solid #444; }
         .player-row.is-dead { border-left-color: var(--accent); }
-        .admin-btns { display: flex; gap: 5px; margin-top: 5px; }
 
         #login-screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .login-box { background: var(--panel); padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #333; width: 340px; }
         
         input { width: 100%; padding: 14px; margin: 10px 0; background: #1a1a1a; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; }
-        
         button { padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 5px; }
         .login-box button, #host-panel button { width: 100%; } 
         
         /* Кнопка вийти - в правому куті */
-        #exit-btn { 
-            position: fixed; bottom: 20px; right: 20px; z-index: 2000; 
-            padding: 10px 25px; background: #333; color: #fff; 
-            border: none; border-radius: 8px; cursor: pointer; 
-            display: none; font-size: 12px; width: auto; 
-        }
-        #exit-btn:hover { background: var(--accent); }
+        #exit-btn { position: fixed; bottom: 20px; right: 20px; z-index: 2000; padding: 10px 25px; background: #333; color: #fff; border: none; border-radius: 8px; cursor: pointer; display: none; font-size: 12px; width: auto; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color: var(--accent);">МАФІЯ</h2>
+            <h2 style="color: var(--accent); letter-spacing: 2px;">МАФІЯ</h2>
             <input type="text" id="userName" placeholder="Твоє ім'я" autocomplete="username">
             <input type="password" id="roomPass" placeholder="Пароль" autocomplete="current-password">
             <button onclick="startApp()">УВІЙТИ В МІСТО</button>
@@ -62,12 +56,13 @@
     <div id="video-grid"></div>
 
     <div id="host-panel">
-        <h3 style="text-align: center;">ПАНЕЛЬ ВЕДУЧОГО</h3>
+        <h3 style="text-align: center; border-bottom: 1px solid #333; padding-bottom: 15px;">ПАНЕЛЬ ВЕДУЧОГО</h3>
         <button style="background: var(--blue); margin-bottom: 20px;" onclick="assignNumbers()">🎲 РОЗДАТИ НОМЕРИ</button>
         <div id="player-list-admin" style="overflow-y: auto; flex-grow: 1;"></div>
     </div>
 
     <script>
+        // --- Твій Firebase Config ---
         const firebaseConfig = {
             apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
             authDomain: "mafia-site-6f939.firebaseapp.com",
@@ -153,29 +148,25 @@
                     if (u.status === 'dead') slot.classList.add('dead');
                     else slot.classList.remove('dead');
 
-                    // ПРЕФІКС [Ведучий]
                     const prefix = (u.role === 'host') ? "[Ведучий] " : "";
                     const labelText = `${prefix}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
 
-                    // ФОРМУВАННЯ URL З ПАУЗОЮ (&st=1) ТА ПРИХОВУВАННЯМ БАРУ (&clean)
                     let ninjaUrl = "";
                     if (id === myId && myRole !== "observer") {
-                        // ПУШ (власне відео)
+                        // ПУШ (Додано &mic=1, &ad=1, &clean)
                         ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&autostart&m&pro&as=1&facing=front&ad=1&mic=1&clean`;
                     } else {
-                        // ПЕРЕГЛЯД (інші)
-                        // Якщо гравець мертвий - додаємо &st=1 (Stop Stream / Pause)
+                        // ПЕРЕГЛЯД (Додано &st=1 якщо dead)
                         const pauseParam = (u.status === 'dead') ? "&st=1" : "";
                         ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean${pauseParam}`;
                     }
 
-                    // Оновлюємо iframe, якщо змінився статус (щоб спрацювала пауза)
                     const currentIframe = slot.querySelector('iframe');
                     if (!currentIframe || currentIframe.src !== ninjaUrl) {
                         slot.innerHTML = `
                             <div class="slot-num">${u.number || ''}</div>
                             <div class="player-label">${labelText}</div>
-                            <iframe src="${ninjaUrl}" allow="camera;microphone;fullscreen;display-capture;autoplay"></iframe>
+                            <iframe src="${ninjaUrl}" allow="camera;microphone;fullscreen;autoplay;display-capture"></iframe>
                         `;
                     } else {
                         slot.querySelector('.player-label').innerText = labelText;
