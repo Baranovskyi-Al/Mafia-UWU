@@ -2,10 +2,10 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>MAFIA</title>
+    <title>Mafia LiveKit Dynamic</title>
     
-    <!-- SDK Daily.co та Firebase -->
-    <script src="https://unpkg.com/@daily-co/daily-js"></script>
+    <!-- SDK LiveKit та Firebase -->
+    <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
@@ -13,7 +13,6 @@
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #d32f2f; --blue: #1976d2; }
         body { margin: 0; background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Адаптивна сітка */
         #video-grid { 
             flex-grow: 1; display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -24,37 +23,38 @@
         .video-slot { 
             background: #1a1a1a; border: 2px solid #333; border-radius: 12px; 
             position: relative; overflow: hidden; aspect-ratio: 16 / 9;
+            order: 99; /* По дефолту в кінці */
         }
 
         video { width: 100%; height: 100%; object-fit: cover; background: #111; }
         
         .player-label { 
             position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.8); 
-            padding: 6px 12px; border-radius: 6px; z-index: 5; font-size: 14px;
+            padding: 6px 12px; border-radius: 6px; z-index: 5; font-size: 13px;
             border: 1px solid #444; font-weight: bold;
         }
 
-        .slot-number-bg {
+        .slot-num-bg {
             position: absolute; top: 5px; right: 15px; font-size: 35px; 
             font-weight: 900; color: rgba(255,255,255,0.05); z-index: 2;
         }
 
         #host-panel { width: 320px; background: var(--panel); border-left: 2px solid #222; padding: 20px; display: none; flex-direction: column; box-sizing: border-box; }
-        .player-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 12px; background: #222; border-radius: 8px; border-left: 4px solid #444; }
-        .player-row.dead { border-left-color: var(--accent); opacity: 0.6; }
-
+        .player-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 10px; background: #222; border-radius: 8px; }
+        
         #login-screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .login-box { background: var(--panel); padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #333; width: 320px; }
         input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: #fff; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2>MAFIA</h2>
+            <h2 style="letter-spacing: 2px;">MAFIA LIVEKIT</h2>
             <input type="text" id="userName" placeholder="Твоє ім'я">
+            <input type="text" id="joinToken" placeholder="Встав токен з консолі">
             <input type="password" id="roomPass" placeholder="Пароль">
             <button onclick="startApp()">УВІЙТИ</button>
         </div>
@@ -63,36 +63,36 @@
     <div id="video-grid"></div>
 
     <div id="host-panel">
-        <h3 style="text-align: center; margin-top: 0;">ПАНЕЛЬ ВЕДУЧОГО</h3>
-        <button onclick="assignNumbers()" style="background: var(--blue); margin-bottom: 20px;">🎲 РОЗДАТИ НОМЕРИ</button>
+        <h3 style="text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px;">ВЕДУЧИЙ</h3>
+        <button onclick="assignNumbers()" style="background: var(--blue); margin-bottom: 20px; width: 100%; padding: 10px; border-radius: 5px; color: white; border: none; cursor: pointer;">🎲 РОЗДАТИ НОМЕРИ</button>
         <div id="player-list-admin"></div>
     </div>
 
     <script>
         // --- КОНФІГУРАЦІЯ ---
-        const DAILY_ROOM_URL = "https://cattusdeus.daily.co/kwBR3sUZu4JBbNcq5gNa"; 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
-            authDomain: "mafia-site-6f939.firebaseapp.com",
-            databaseURL: "https://mafia-site-6f939-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "mafia-site-6f939",
-            storageBucket: "mafia-site-6f939.firebasestorage.app",
-            messagingSenderId: "78605254170",
-            appId: "1:78605254170:web:b47e5b500ecffe4f2d1ba3",
-            measurementId: "G-CL90SPXY5W" 
-    };
+        const LIVEKIT_URL = "wss://mafia-uwu-2h9br5vp.livekit.cloud"; 
+        const firebaseConfig = { apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
+    authDomain: "mafia-site-6f939.firebaseapp.com",
+    databaseURL: "https://mafia-site-6f939-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "mafia-site-6f939",
+    storageBucket: "mafia-site-6f939.firebasestorage.app",
+    messagingSenderId: "78605254170",
+    appId: "1:78605254170:web:b47e5b500ecffe4f2d1ba3",
+    measurementId: "G-CL90SPXY5W" };
 
-        const PASSWORDS = { host: "admin2026", player: "misto2026" };
-        const ROOM_ID = "Mafia_Daily_Session";
+        const PASSWORDS = { host: "321", player: "123" };
+        const ROOM_ID = "Mafia_LiveKit_Session";
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let callFrame = null;
+        const room = new LivekitClient.Room();
+
         let myId = null;
         let myRole = "";
 
         async function startApp() {
             const name = document.getElementById('userName').value.trim();
+            const token = document.getElementById('joinToken').value.trim();
             const pass = document.getElementById('roomPass').value.trim();
             
             if (pass === PASSWORDS.host) myRole = "host";
@@ -102,30 +102,31 @@
             document.getElementById('login-screen').style.display = 'none';
             if (myRole === "host") document.getElementById('host-panel').style.display = 'flex';
 
-            // Ініціалізація Daily без IFrame (чистий Call Object)
-            callFrame = window.DailyIframe.createCallObject();
-            
-            await callFrame.join({ url: DAILY_ROOM_URL, userName: name });
-            myId = callFrame.participants().local.session_id;
+            // Підключення до LiveKit
+            await room.connect(LIVEKIT_URL, token);
+            myId = room.localParticipant.sid;
 
             if (myRole === "player") {
+                await room.localParticipant.setCameraEnabled(true);
+                await room.localParticipant.setMicrophoneEnabled(true);
+                
                 db.ref(`rooms/${ROOM_ID}/users/${myId}`).set({ 
-                    name: name, status: "alive", dailyId: myId, number: "" 
+                    name: name, status: "alive", sid: myId, number: "" 
                 });
                 db.ref(`rooms/${ROOM_ID}/users/${myId}`).onDisconnect().remove();
             }
 
-            // Слухаємо оновлення учасників
-            callFrame.on('participant-updated', handleParticipantUpdate);
-            callFrame.on('participant-joined', handleParticipantUpdate);
-            callFrame.on('participant-left', (e) => document.getElementById(`slot-${e.participant.session_id}`)?.remove());
-
+            room.on(LivekitClient.RoomEvent.TrackSubscribed, handleTrackSubscribed);
             syncWithFirebase();
         }
 
-        function handleParticipantUpdate() {
-            // Ця функція просто тригерить перемальовку, якщо треба
-            // Основна магія в syncWithFirebase
+        function handleTrackSubscribed(track, publication, participant) {
+            if (track.kind === LivekitClient.Track.Kind.Video) {
+                // Відео підключиться автоматично через syncWithFirebase
+            }
+            if (track.kind === LivekitClient.Track.Kind.Audio) {
+                track.attach();
+            }
         }
 
         function syncWithFirebase() {
@@ -134,8 +135,6 @@
                 if (!users) return;
 
                 const grid = document.getElementById('video-grid');
-                const participants = callFrame.participants();
-
                 if (myRole === "host") updateAdminPanel(users);
 
                 Object.keys(users).forEach(id => {
@@ -154,16 +153,22 @@
 
                     const label = `${userData.number ? '['+userData.number+'] ' : ''}${userData.status === 'dead' ? '💀 ВБИТО: ' : ''}${userData.name}`;
                     slot.innerHTML = `
-                        <div class="slot-number-bg">${userData.number || ''}</div>
+                        <div class="slot-num-bg">${userData.number || ''}</div>
                         <div class="player-label">${label}</div>
-                        <video id="video-${id}" autoplay playsinline muted="${id === myId}"></video>
+                        <div id="vid-cont-${id}" style="width:100%; height:100%;"></div>
                     `;
 
-                    // Підключаємо потік до відео-тегу
-                    const p = id === myId ? participants.local : participants[id];
-                    if (p && p.videoTrack) {
-                        const vTag = document.getElementById(`video-${id}`);
-                        vTag.srcObject = new MediaStream([p.videoTrack]);
+                    // Малюємо відео
+                    const participant = id === myId ? room.localParticipant : room.participants.get(id);
+                    if (participant) {
+                        const videoTrack = participant.getTrack(LivekitClient.Track.Source.Camera);
+                        if (videoTrack && videoTrack.track) {
+                            const el = videoTrack.track.attach();
+                            el.style.width = "100%";
+                            el.style.height = "100%";
+                            el.style.objectFit = "cover";
+                            document.getElementById(`vid-cont-${id}`).appendChild(el);
+                        }
                     }
                 });
             });
@@ -183,9 +188,9 @@
             list.innerHTML = '';
             Object.keys(users).sort((a,b) => (users[a].number || 99) - (users[b].number || 99)).forEach(id => {
                 const u = users[id];
-                list.innerHTML += `<div class="player-row ${u.status === 'dead' ? 'dead' : ''}">
+                list.innerHTML += `<div class="player-row" style="opacity: ${u.status === 'dead' ? 0.5 : 1}">
                     <span><b>${u.number || '??'}.</b> ${u.name}</span>
-                    <button onclick="db.ref('rooms/${ROOM_ID}/users/${id}/status').set('${u.status === 'dead' ? 'alive' : 'dead'}')">
+                    <button onclick="db.ref('rooms/${ROOM_ID}/users/${id}/status').set('${u.status === 'dead' ? 'alive' : 'dead'}')" style="padding: 5px; font-size: 10px;">
                         ${u.status === 'dead' ? 'ОЖИТИ' : 'ВБИТИ'}
                     </button>
                 </div>`;
