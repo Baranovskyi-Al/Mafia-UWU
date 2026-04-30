@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>МАФІЯ - STABLE v3.0</title>
+    <title>МАФІЯ - STABLE v3.1</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230a0a0a' stroke='%23d32f2f' stroke-width='4'/><path d='M25 65 h50 v5 a5 5 0 0 1 -5 5 h-40 a5 5 0 0 1 -5 -5 z' fill='%23d32f2f'/><path d='M35 65 v-20 c0-10 10-15 15-15 s15 5 15 15 v20' fill='%23d32f2f'/><rect x='35' y='55' width='30' height='5' fill='%23000'/></svg>">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -135,6 +135,7 @@
             });
         }
 
+        // ОНОВЛЕНО: Додано перевірку, щоб не показувати кнопки для самого себе або інших ведучих
         function updateAdminPanel(users) {
             const list = document.getElementById('player-list-admin');
             list.innerHTML = '';
@@ -142,11 +143,20 @@
                 const u = users[id];
                 const row = document.createElement('div');
                 row.className = 'player-row';
-                row.innerHTML = `<span><b>${u.number || (u.role === 'host' ? '★' : '??')}.</b> ${u.name}</span>
-                    <div style="display:flex; gap:5px; margin-top:5px;">
-                        <button onclick="toggleLife('${id}')" style="width:100%">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
-                        <button onclick="kickPlayer('${id}')" style="background:#444; width:60px; font-size:10px;">КІК</button>
-                    </div>`;
+                
+                let controls = '';
+                // Якщо це інший ведучий або я сам
+                if (u.role === 'host' || id === myId) {
+                    controls = `<span style="font-size:10px; color:#777;">${id === myId ? 'ЦЕ ТИ' : 'ВЕДУЧИЙ'}</span>`;
+                } else {
+                    controls = `
+                        <div style="display:flex; gap:5px; margin-top:5px;">
+                            <button onclick="toggleLife('${id}')" style="width:100%">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
+                            <button onclick="kickPlayer('${id}')" style="background:#444; width:60px; font-size:10px;">КІК</button>
+                        </div>`;
+                }
+
+                row.innerHTML = `<span><b>${u.number || (u.role === 'host' ? '★' : '??')}.</b> ${u.name}</span>${controls}`;
                 list.appendChild(row);
             });
         }
