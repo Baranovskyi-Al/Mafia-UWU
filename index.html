@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mafia Ninja Ultimate v2.3</title>
+    
+    <!-- Фавіконка (Червоний капелюх) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230a0a0a' stroke='%23d32f2f' stroke-width='4'/><path d='M25 65 h50 v5 a5 5 0 0 1 -5 5 h-40 a5 5 0 0 1 -5 -5 z' fill='%23d32f2f'/><path d='M35 65 v-20 c0-10 10-15 15-15 s15 5 15 15 v20' fill='%23d32f2f'/><rect x='35' y='55' width='30' height='5' fill='%23000'/></svg>">
-    <title>МАФІЯ</title>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #d32f2f; --blue: #1976d2; --border: #333; }
         body { margin: 0; background: var(--bg); color: #eee; font-family: 'Segoe UI', Roboto, sans-serif; display: flex; height: 100vh; overflow: hidden; }
@@ -23,25 +27,24 @@
         #host-panel { width: 340px; background: var(--panel); border-left: 2px solid #222; padding: 20px; display: none; flex-direction: column; box-sizing: border-box; }
         .player-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; padding: 12px; background: #222; border-radius: 8px; border-left: 4px solid #444; }
         .player-row.is-dead { border-left-color: var(--accent); }
+        .admin-btns { display: flex; gap: 5px; margin-top: 5px; }
 
         #login-screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .login-box { background: var(--panel); padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #333; width: 340px; }
         input { width: 100%; padding: 14px; margin: 10px 0; background: #1a1a1a; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 5px; }
         
-        /* Кнопка Вийти для гравців */
-        #exit-btn { position: fixed; bottom: 20px; left: 20px; z-index: 100; padding: 10px 20px; background: #333; color: #fff; border: none; border-radius: 8px; cursor: pointer; display: none; font-size: 12px; opacity: 0.6; }
-        #exit-btn:hover { opacity: 1; background: var(--accent); }
+        #exit-btn { position: fixed; bottom: 20px; left: 20px; z-index: 100; padding: 10px 20px; background: #333; color: #fff; border: none; border-radius: 8px; cursor: pointer; display: none; font-size: 12px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color: var(--accent); letter-spacing: 2px;">МАФІЯ</h2>
+            <h2 style="color: var(--accent);">MAFIA NINJA</h2>
             <input type="text" id="userName" placeholder="Твоє ім'я" autocomplete="username">
             <input type="password" id="roomPass" placeholder="Пароль" autocomplete="current-password">
-            <button onclick="startApp()">УВІЙТИ В МІСТО</button>
+            <button onclick="startApp()">УВІЙТИ</button>
         </div>
     </div>
 
@@ -50,13 +53,13 @@
     <div id="video-grid"></div>
 
     <div id="host-panel">
-        <h3 style="text-align: center;">ПАНЕЛЬ ВЕДУЧОГО</h3>
+        <h3 style="text-align: center;">ВЕДУЧИЙ</h3>
         <button style="background: var(--blue); margin-bottom: 20px;" onclick="assignNumbers()">🎲 РОЗДАТИ НОМЕРИ</button>
         <div id="player-list-admin" style="overflow-y: auto; flex-grow: 1;"></div>
     </div>
 
     <script>
-        // КОНФІГУРАЦІЯ
+        // --- КОНФІГ
         const firebaseConfig = {
             apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
             authDomain: "mafia-site-6f939.firebaseapp.com",
@@ -68,12 +71,8 @@
             measurementId: "G-CL90SPXY5W"
         };
 
-        const ROOM_NAME = "МАФІЯ";
-        const PASSWORDS = { 
-            host: "321", 
-            player: "123", 
-            observer: "333" 
-        };
+        const ROOM_NAME = "Mafia_Ninja_Ultimate_2026";
+        const PASSWORDS = { host: "321", player: "123", observer: "333" };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -96,7 +95,6 @@
             if (myRole === "host") document.getElementById('host-panel').style.display = 'flex';
             if (myRole !== "observer") document.getElementById('exit-btn').style.display = 'block';
 
-            // Глядач не реєструється в списку гравців (він невидимий)
             if (myRole !== "observer") {
                 const userRef = db.ref(`rooms/${ROOM_NAME}/users/${myId}`);
                 userRef.set({
@@ -110,7 +108,7 @@
 
                 userRef.on('value', (snap) => {
                     if (!snap.exists() && myRole !== "host") {
-                        alert("Ви залишили ігровий стіл");
+                        alert("Вас було видалено");
                         location.reload();
                     }
                 });
@@ -126,13 +124,11 @@
                 
                 if (myRole === "host") updateAdminPanel(users);
 
-                // Видалення
                 Array.from(grid.children).forEach(child => {
                     const id = child.id.replace('slot-', '');
                     if (!users[id]) child.remove();
                 });
 
-                // Рендеринг
                 Object.keys(users).forEach(id => {
                     const u = users[id];
                     let slot = document.getElementById(`slot-${id}`);
@@ -150,13 +146,10 @@
 
                     const labelText = `${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
 
-                    // URL ПАРАМЕТРИ
                     let ninjaUrl = "";
                     if (id === myId && myRole !== "observer") {
-                        // ТРАНСЛЯЦІЯ
                         ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&autostart&m&pro&as=1&facing=front`;
                     } else {
-                        // ПЕРЕГЛЯД
                         ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi`;
                     }
 
@@ -174,15 +167,52 @@
             });
         }
 
-        function exitGame() {
-            if (confirm("Вийти з гри?")) {
-                db.ref(`rooms/${ROOM_NAME}/users/${myId}`).remove().then(() => {
-                    location.reload();
-                });
-            }
+        // --- ФУНКЦІЇ АДМІНКИ ТА ВИХОДУ ---
+
+        function updateAdminPanel(users) {
+            const list = document.getElementById('player-list-admin');
+            list.innerHTML = '';
+            Object.keys(users).sort((a,b) => (users[a].number || 99) - (users[b].number || 99)).forEach(id => {
+                const u = users[id];
+                const row = document.createElement('div');
+                row.className = `player-row ${u.status === 'dead' ? 'is-dead' : ''}`;
+                
+                const controls = (u.role === 'host') ? `<span style="font-size:10px; color:#777;">ВЕДУЧИЙ</span>` : `
+                    <div class="admin-btns">
+                        <button onclick="toggleLife('${id}', '${u.status}')">${u.status === 'dead' ? 'ОЖИТИ' : 'ВБИТИ'}</button>
+                        <button onclick="kickPlayer('${id}')" style="background:#444; width:60px; font-size:10px;">КІК</button>
+                    </div>`;
+
+                row.innerHTML = `<span><b>${u.number || (u.role === 'host' ? '★' : '??')}.</b> ${u.name}</span>${controls}`;
+                list.appendChild(row);
+            });
         }
 
+        window.toggleLife = function(id, currentStatus) {
+            db.ref(`rooms/${ROOM_NAME}/users/${id}/status`).set(currentStatus === 'dead' ? 'alive' : 'dead');
+        };
 
+        window.kickPlayer = function(id) {
+            if(confirm("Видалити гравця?")) db.ref(`rooms/${ROOM_NAME}/users/${id}`).remove();
+        };
+
+        window.assignNumbers = function() {
+            db.ref(`rooms/${ROOM_NAME}/users`).once('value', snapshot => {
+                const data = snapshot.val();
+                if (!data) return;
+                const playerIds = Object.keys(data).filter(id => data[id].role !== 'host');
+                let nums = Array.from({length: playerIds.length}, (_, i) => (i + 1).toString().padStart(2, '0')).sort(() => Math.random() - 0.5);
+                let updates = {};
+                playerIds.forEach((id, i) => { updates[`${id}/number`] = nums[i]; });
+                db.ref(`rooms/${ROOM_NAME}/users`).update(updates);
+            });
+        };
+
+        function exitGame() {
+            if (confirm("Вийти з гри?")) {
+                db.ref(`rooms/${ROOM_NAME}/users/${myId}`).remove().then(() => location.reload());
+            }
+        }
     </script>
 </body>
 </html>
