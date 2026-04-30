@@ -2,88 +2,67 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Mafia LiveKit Dynamic</title>
-    
-    <!-- SDK LiveKit та Firebase -->
-    <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+    <title>Mafia Professional (VDO.ninja Edition)</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
     <style>
         :root { --bg: #0a0a0a; --panel: #141414; --accent: #d32f2f; --blue: #1976d2; }
         body { margin: 0; background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
         
         #video-grid { 
             flex-grow: 1; display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            grid-auto-rows: 1fr; gap: 15px; padding: 15px; 
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-auto-rows: 1fr; gap: 10px; padding: 10px; 
             background: #000; align-content: start; overflow-y: auto;
         }
 
         .video-slot { 
-            background: #1a1a1a; border: 2px solid #333; border-radius: 12px; 
+            background: #1a1a1a; border: 2px solid #333; border-radius: 8px; 
             position: relative; overflow: hidden; aspect-ratio: 16 / 9;
-            order: 99; /* По дефолту в кінці */
         }
 
-        video { width: 100%; height: 100%; object-fit: cover; background: #111; }
+        iframe { width: 100%; height: 100%; border: none; background: #111; }
         
         .player-label { 
-            position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.8); 
-            padding: 6px 12px; border-radius: 6px; z-index: 5; font-size: 13px;
-            border: 1px solid #444; font-weight: bold;
+            position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.8); 
+            padding: 4px 10px; border-radius: 4px; z-index: 5; font-size: 13px;
+            border: 1px solid #444; font-weight: bold; pointer-events: none;
         }
 
-        .slot-num-bg {
-            position: absolute; top: 5px; right: 15px; font-size: 35px; 
+        .slot-num {
+            position: absolute; top: 0; right: 10px; font-size: 30px; 
             font-weight: 900; color: rgba(255,255,255,0.05); z-index: 2;
         }
 
-        #host-panel { width: 320px; background: var(--panel); border-left: 2px solid #222; padding: 20px; display: none; flex-direction: column; box-sizing: border-box; }
-        .player-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 10px; background: #222; border-radius: 8px; }
-        
+        #host-panel { width: 300px; background: var(--panel); border-left: 2px solid #222; padding: 15px; display: none; flex-direction: column; }
+        .player-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 8px; background: #222; border-radius: 5px; }
+
         #login-screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; align-items: center; justify-content: center; }
-        .login-box { background: var(--panel); padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #333; width: 320px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: #fff; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .login-box { background: var(--panel); padding: 30px; border-radius: 12px; text-align: center; border: 1px solid #333; }
+        input { width: 100%; padding: 10px; margin: 5px 0; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: var(--accent); color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-    <h2 style="letter-spacing: 2px;">MAFIA LIVEKIT</h2>
-    
-    <!-- Поле імені -->
-    <input type="text" id="userName" 
-           placeholder="Твоє ім'я" 
-           autocomplete="username">
-    
-    <!-- Поле токена (якщо це одноразовий код, краще вимкнути або поставити one-time-code) -->
-    <input type="text" id="joinToken" 
-           placeholder="Встав токен з консолі" 
-           autocomplete="off">
-    
-    <!-- Поле пароля -->
-    <input type="password" id="roomPass" 
-           placeholder="Пароль" 
-           autocomplete="current-password">
-    
-    <button onclick="startApp()">УВІЙТИ</button>
-</div>
+            <h2>MAFIA NINJA</h2>
+            <input type="text" id="userName" placeholder="Твоє ім'я">
+            <input type="password" id="roomPass" placeholder="Пароль">
+            <button onclick="startApp()">УВІЙТИ</button>
+        </div>
     </div>
 
     <div id="video-grid"></div>
 
     <div id="host-panel">
-        <h3 style="text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px;">ВЕДУЧИЙ</h3>
-        <button onclick="assignNumbers()" style="background: var(--blue); margin-bottom: 20px; width: 100%; padding: 10px; border-radius: 5px; color: white; border: none; cursor: pointer;">🎲 РОЗДАТИ НОМЕРИ</button>
-        <div id="player-list-admin"></div>
+        <h3 style="text-align: center;">ВЕДУЧИЙ</h3>
+        <button onclick="assignNumbers()" style="background: var(--blue);">🎲 РОЗДАТИ НОМЕРИ</button>
+        <div id="player-list-admin" style="margin-top: 15px;"></div>
     </div>
 
     <script>
-        // --- КОНФІГУРАЦІЯ ---
-        const LIVEKIT_URL = "wss://mafia-uwu-2h9br5vp.livekit.cloud"; 
         const firebaseConfig = { apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
     authDomain: "mafia-site-6f939.firebaseapp.com",
     databaseURL: "https://mafia-site-6f939-default-rtdb.europe-west1.firebasedatabase.app",
@@ -92,66 +71,50 @@
     messagingSenderId: "78605254170",
     appId: "1:78605254170:web:b47e5b500ecffe4f2d1ba3",
     measurementId: "G-CL90SPXY5W" };
-
-        const PASSWORDS = { host: "321", player: "123" };
-        const ROOM_ID = "Mafia_LiveKit_Session";
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const room = new LivekitClient.Room();
-
-        let myId = null;
+        const ROOM_NAME = "Mafia_Ninja_2026"; 
+        
+        let myId = "u" + Math.floor(Math.random() * 1000000);
         let myRole = "";
 
         async function startApp() {
             const name = document.getElementById('userName').value.trim();
-            const token = document.getElementById('joinToken').value.trim();
             const pass = document.getElementById('roomPass').value.trim();
             
-            if (pass === PASSWORDS.host) myRole = "host";
-            else if (pass === PASSWORDS.player) myRole = "player";
+            if (pass === "admin2026") myRole = "host";
+            else if (pass === "misto2026") myRole = "player";
             else return alert("Невірний пароль");
 
             document.getElementById('login-screen').style.display = 'none';
             if (myRole === "host") document.getElementById('host-panel').style.display = 'flex';
 
-            // Підключення до LiveKit
-            await room.connect(LIVEKIT_URL, token);
-            myId = room.localParticipant.sid;
-
+            // Реєструємо себе у Firebase
             if (myRole === "player") {
-                await room.localParticipant.setCameraEnabled(true);
-                await room.localParticipant.setMicrophoneEnabled(true);
-                
-                db.ref(`rooms/${ROOM_ID}/users/${myId}`).set({ 
-                    name: name, status: "alive", sid: myId, number: "" 
+                db.ref(`rooms/${ROOM_NAME}/users/${myId}`).set({ 
+                    name: name, status: "alive", streamId: myId, number: "" 
                 });
-                db.ref(`rooms/${ROOM_ID}/users/${myId}`).onDisconnect().remove();
+                db.ref(`rooms/${ROOM_NAME}/users/${myId}`).onDisconnect().remove();
             }
 
-            room.on(LivekitClient.RoomEvent.TrackSubscribed, handleTrackSubscribed);
-            syncWithFirebase();
+            syncGrid();
         }
 
-        function handleTrackSubscribed(track, publication, participant) {
-            if (track.kind === LivekitClient.Track.Kind.Video) {
-                // Відео підключиться автоматично через syncWithFirebase
-            }
-            if (track.kind === LivekitClient.Track.Kind.Audio) {
-                track.attach();
-            }
-        }
-
-        function syncWithFirebase() {
-            db.ref(`rooms/${ROOM_ID}/users`).on('value', (snapshot) => {
-                const users = snapshot.val();
-                if (!users) return;
-
+        function syncGrid() {
+            db.ref(`rooms/${ROOM_NAME}/users`).on('value', (snapshot) => {
+                const users = snapshot.val() || {};
                 const grid = document.getElementById('video-grid');
-                if (myRole === "host") updateAdminPanel(users);
+                
+                if (myRole === "host") updateAdmin(users);
+
+                // Видаляємо тих, хто пішов
+                Array.from(grid.children).forEach(child => {
+                    const id = child.id.replace('slot-', '');
+                    if (!users[id]) child.remove();
+                });
 
                 Object.keys(users).forEach(id => {
-                    const userData = users[id];
+                    const u = users[id];
                     let slot = document.getElementById(`slot-${id}`);
 
                     if (!slot) {
@@ -161,50 +124,54 @@
                         grid.appendChild(slot);
                     }
 
-                    // Сортування через CSS Order
-                    slot.style.order = userData.number || 99;
+                    slot.style.order = u.number || 99;
+                    const label = `${u.number ? '['+u.number+'] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
 
-                    const label = `${userData.number ? '['+userData.number+'] ' : ''}${userData.status === 'dead' ? '💀 ВБИТО: ' : ''}${userData.name}`;
-                    slot.innerHTML = `
-                        <div class="slot-num-bg">${userData.number || ''}</div>
-                        <div class="player-label">${label}</div>
-                        <div id="vid-cont-${id}" style="width:100%; height:100%;"></div>
-                    `;
+                    // Налаштування URL для VDO.ninja
+                    // Для себе - push (відправляємо), для інших - view (дивимось)
+                    let ninjaUrl = "";
+                    if (id === myId) {
+                        // Режим передачі: автостарт, без звуку (щоб не чути себе), приховати UI
+                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&autostart&clean&m&pro`;
+                    } else {
+                        // Режим перегляду: автоплей, приховати UI
+                        ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&clean&noapi`;
+                    }
 
-                    // Малюємо відео
-                    const participant = id === myId ? room.localParticipant : room.participants.get(id);
-                    if (participant) {
-                        const videoTrack = participant.getTrack(LivekitClient.Track.Source.Camera);
-                        if (videoTrack && videoTrack.track) {
-                            const el = videoTrack.track.attach();
-                            el.style.width = "100%";
-                            el.style.height = "100%";
-                            el.style.objectFit = "cover";
-                            document.getElementById(`vid-cont-${id}`).appendChild(el);
-                        }
+                    // Оновлюємо iframe тільки якщо його немає (щоб не перезавантажувати відео)
+                    if (!slot.querySelector('iframe')) {
+                        slot.innerHTML = `
+                            <div class="slot-num">${u.number || ''}</div>
+                            <div class="player-label">${label}</div>
+                            <iframe src="${ninjaUrl}" allow="camera;microphone"></iframe>
+                        `;
+                    } else {
+                        slot.querySelector('.player-label').innerText = label;
+                        slot.querySelector('.slot-num').innerText = u.number || '';
                     }
                 });
             });
         }
 
         window.assignNumbers = function() {
-            db.ref(`rooms/${ROOM_ID}/users`).once('value', snapshot => {
+            db.ref(`rooms/${ROOM_NAME}/users`).once('value', snapshot => {
                 const data = snapshot.val();
+                if (!data) return;
                 const ids = Object.keys(data);
                 let nums = Array.from({length: ids.length}, (_, i) => (i + 1).toString().padStart(2, '0')).sort(() => Math.random() - 0.5);
-                ids.forEach((id, i) => db.ref(`rooms/${ROOM_ID}/users/${id}/number`).set(nums[i]));
+                ids.forEach((id, i) => db.ref(`rooms/${ROOM_NAME}/users/${id}/number`).set(nums[i]));
             });
         };
 
-        function updateAdminPanel(users) {
+        function updateAdmin(users) {
             const list = document.getElementById('player-list-admin');
             list.innerHTML = '';
             Object.keys(users).sort((a,b) => (users[a].number || 99) - (users[b].number || 99)).forEach(id => {
                 const u = users[id];
-                list.innerHTML += `<div class="player-row" style="opacity: ${u.status === 'dead' ? 0.5 : 1}">
-                    <span><b>${u.number || '??'}.</b> ${u.name}</span>
-                    <button onclick="db.ref('rooms/${ROOM_ID}/users/${id}/status').set('${u.status === 'dead' ? 'alive' : 'dead'}')" style="padding: 5px; font-size: 10px;">
-                        ${u.status === 'dead' ? 'ОЖИТИ' : 'ВБИТИ'}
+                list.innerHTML += `<div class="player-row">
+                    <span style="font-size:12px;">${u.number || '??'}. ${u.name}</span>
+                    <button onclick="db.ref('rooms/${ROOM_NAME}/users/${id}/status').set('${u.status === 'dead' ? 'alive' : 'dead'}')" style="padding:4px; font-size:10px; width:60px;">
+                        ${u.status === 'dead' ? 'ALIVE' : 'DEAD'}
                     </button>
                 </div>`;
             });
