@@ -19,7 +19,6 @@
         .video-slot.dead { border-color: var(--accent); opacity: 0.6; filter: grayscale(0.5); }
         iframe { width: 100%; height: 100%; border: none; background: #000; }
         
-        /* Ім'я у верхньому лівому куті */
         .player-label { position: absolute; top: 40px; left: 10px; background: rgba(0,0,0,0.8); padding: 4px 12px; border-radius: 6px; z-index: 10; font-size: 13px; border: 1px solid #444; font-weight: bold; pointer-events: none; }
         .slot-num { position: absolute; top: 5px; right: 15px; font-size: 40px; font-weight: 900; color: rgba(255,255,255,0.07); z-index: 5; pointer-events: none; }
 
@@ -36,7 +35,6 @@
         button { padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 5px; }
         .login-box button, #host-panel button { width: 100%; } 
         
-        /* Кнопка вийти - фікс розміру */
         #exit-btn { 
             position: fixed; bottom: 20px; right: 50px; z-index: 100; 
             padding: 10px 25px; background: #333; color: #fff; 
@@ -68,7 +66,6 @@
     </div>
 
     <script>
-        // --- КОНФІГ ---
         const firebaseConfig = {
             apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
             authDomain: "mafia-site-6f939.firebaseapp.com",
@@ -102,7 +99,6 @@
 
             document.getElementById('login-screen').style.display = 'none';
             if (myRole === "host") document.getElementById('host-panel').style.display = 'flex';
-            
             if (myRole !== "observer") document.getElementById('exit-btn').style.display = 'block';
 
             if (myRole !== "observer") {
@@ -160,8 +156,8 @@
 
                     let ninjaUrl = "";
                     if (id === myId && myRole !== "observer") {
-                        // ПУШ: Додано &autostart для автоматичного вибору камери
-                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&autostart&m&pro&facing=front&ad=1`;
+                        // ПУШ: Додано &as=1 для примусового автозапуску
+                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&autostart&as=1&m&pro&facing=front&ad=1`;
                     } else {
                         // ПЕРЕГЛЯД
                         ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1`;
