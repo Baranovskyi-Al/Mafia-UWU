@@ -2,84 +2,58 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAFIA</title>
     
-    <!-- SDK та Бібліотеки -->
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.0.js"></script>
+    <!-- SDK Daily.co та Firebase -->
+    <script src="https://unpkg.com/@daily-co/daily-js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <style>
-        :root {
-            --bg: #0a0a0a;
-            --panel: #141414;
-            --accent: #d32f2f;
-            --blue: #1976d2;
-        }
-
-        body { 
-            margin: 0; background: var(--bg); color: #eee; 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            display: flex; height: 100vh; overflow: hidden; 
-        }
-
-        /* Динамічна адаптивна сітка */
+        :root { --bg: #0a0a0a; --panel: #141414; --accent: #d32f2f; --blue: #1976d2; }
+        body { margin: 0; background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Адаптивна сітка */
         #video-grid { 
             flex-grow: 1; display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            grid-auto-rows: 1fr;
-            gap: 15px; padding: 15px; 
+            grid-auto-rows: 1fr; gap: 15px; padding: 15px; 
             background: #000; align-content: start; overflow-y: auto;
         }
 
         .video-slot { 
             background: #1a1a1a; border: 2px solid #333; border-radius: 12px; 
             position: relative; overflow: hidden; aspect-ratio: 16 / 9;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        /* Використовуємо CSS Order для сортування без перемальовування */
-        .video-slot { order: 99; }
-
-        .video-player { width: 100%; height: 100%; position: absolute; z-index: 1; background: #111; }
+        video { width: 100%; height: 100%; object-fit: cover; background: #111; }
         
         .player-label { 
             position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.8); 
             padding: 6px 12px; border-radius: 6px; z-index: 5; font-size: 14px;
-            border: 1px solid #444; font-weight: bold; pointer-events: none;
+            border: 1px solid #444; font-weight: bold;
         }
 
         .slot-number-bg {
-            position: absolute; top: 10px; right: 15px; font-size: 40px; 
-            font-weight: 900; color: rgba(255,255,255,0.05); z-index: 2; pointer-events: none;
+            position: absolute; top: 5px; right: 15px; font-size: 35px; 
+            font-weight: 900; color: rgba(255,255,255,0.05); z-index: 2;
         }
 
-        /* Панель Ведучого */
-        #host-panel { 
-            width: 320px; background: var(--panel); border-left: 2px solid #222; 
-            padding: 20px; display: none; flex-direction: column; box-sizing: border-box; 
-        }
-        .player-row { 
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px; padding: 12px; background: #222; border-radius: 8px; 
-            border-left: 4px solid #444; 
-        }
+        #host-panel { width: 320px; background: var(--panel); border-left: 2px solid #222; padding: 20px; display: none; flex-direction: column; box-sizing: border-box; }
+        .player-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 12px; background: #222; border-radius: 8px; border-left: 4px solid #444; }
         .player-row.dead { border-left-color: var(--accent); opacity: 0.6; }
 
-        /* Екран входу */
         #login-screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .login-box { background: var(--panel); padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #333; width: 320px; }
         input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: #fff; border-radius: 6px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-blue { background: var(--blue); margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="letter-spacing: 2px;">MAFIA PROFESSIONAL</h2>
+            <h2>MAFIA</h2>
             <input type="text" id="userName" placeholder="Твоє ім'я">
             <input type="password" id="roomPass" placeholder="Пароль">
             <button onclick="startApp()">УВІЙТИ</button>
@@ -89,34 +63,31 @@
     <div id="video-grid"></div>
 
     <div id="host-panel">
-        <h3 style="text-align: center; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 15px;">ВЕДУЧИЙ</h3>
-        <button class="btn-blue" onclick="assignNumbers()">🎲 РОЗДАТИ НОМЕРИ</button>
+        <h3 style="text-align: center; margin-top: 0;">ПАНЕЛЬ ВЕДУЧОГО</h3>
+        <button onclick="assignNumbers()" style="background: var(--blue); margin-bottom: 20px;">🎲 РОЗДАТИ НОМЕРИ</button>
         <div id="player-list-admin"></div>
-        <button onclick="location.reload()" style="background: #444; margin-top: auto;">🚪 ВИЙТИ</button>
     </div>
 
     <script>
         // --- КОНФІГУРАЦІЯ ---
-        const AGORA_APP_ID = "4b7acb628cd54156beea0a30e7225b0a"; 
-        const firebaseConfig = {
+        const DAILY_ROOM_URL = "https://cattusdeus.daily.co/kwBR3sUZu4JBbNcq5gNa"; 
+        const firebaseConfig = { 
             apiKey: "AIzaSyAW3NxnoENnqfk8gXruq9_YDm_Rb77APCg",
-    authDomain: "mafia-site-6f939.firebaseapp.com",
-    databaseURL: "https://mafia-site-6f939-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "mafia-site-6f939",
-    storageBucket: "mafia-site-6f939.firebasestorage.app",
-    messagingSenderId: "78605254170",
-    appId: "1:78605254170:web:b47e5b500ecffe4f2d1ba3",
-    measurementId: "G-CL90SPXY5W"
-        };
+            authDomain: "mafia-site-6f939.firebaseapp.com",
+            databaseURL: "https://mafia-site-6f939-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "mafia-site-6f939",
+            storageBucket: "mafia-site-6f939.firebasestorage.app",
+            messagingSenderId: "78605254170",
+            appId: "1:78605254170:web:b47e5b500ecffe4f2d1ba3",
+            measurementId: "G-CL90SPXY5W" 
+    };
 
-        const PASSWORDS = { host: "321", player: "123", observer: "333" };
-        const CHANNEL = "Mafia_Dynamic_Session";
+        const PASSWORDS = { host: "admin2026", player: "misto2026" };
+        const ROOM_ID = "Mafia_Daily_Session";
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-
-        let localTracks = { videoTrack: null, audioTrack: null };
+        let callFrame = null;
         let myId = null;
         let myRole = "";
 
@@ -126,47 +97,48 @@
             
             if (pass === PASSWORDS.host) myRole = "host";
             else if (pass === PASSWORDS.player) myRole = "player";
-            else if (pass === PASSWORDS.observer) myRole = "observer";
             else return alert("Невірний пароль");
 
             document.getElementById('login-screen').style.display = 'none';
             if (myRole === "host") document.getElementById('host-panel').style.display = 'flex';
 
-            const uid = await client.join(AGORA_APP_ID, CHANNEL, null, null);
-            myId = "user_" + uid;
+            // Ініціалізація Daily без IFrame (чистий Call Object)
+            callFrame = window.DailyIframe.createCallObject();
+            
+            await callFrame.join({ url: DAILY_ROOM_URL, userName: name });
+            myId = callFrame.participants().local.session_id;
 
             if (myRole === "player") {
-                localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-                localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack();
-                await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
-                
-                db.ref(`rooms/${CHANNEL}/users/${myId}`).set({ 
-                    name: name, 
-                    status: "alive", 
-                    agoraUid: uid,
-                    number: "" 
+                db.ref(`rooms/${ROOM_ID}/users/${myId}`).set({ 
+                    name: name, status: "alive", dailyId: myId, number: "" 
                 });
-                db.ref(`rooms/${CHANNEL}/users/${myId}`).onDisconnect().remove();
+                db.ref(`rooms/${ROOM_ID}/users/${myId}`).onDisconnect().remove();
             }
 
-            client.on("user-published", async (user, mediaType) => {
-                await client.subscribe(user, mediaType);
-                if (mediaType === "audio") user.audioTrack.play();
-                // Відео підключиться автоматично через syncGrid
-            });
+            // Слухаємо оновлення учасників
+            callFrame.on('participant-updated', handleParticipantUpdate);
+            callFrame.on('participant-joined', handleParticipantUpdate);
+            callFrame.on('participant-left', (e) => document.getElementById(`slot-${e.participant.session_id}`)?.remove());
 
-            syncGridWithFirebase();
+            syncWithFirebase();
         }
 
-        function syncGridWithFirebase() {
-            db.ref(`rooms/${CHANNEL}/users`).on('value', (snapshot) => {
+        function handleParticipantUpdate() {
+            // Ця функція просто тригерить перемальовку, якщо треба
+            // Основна магія в syncWithFirebase
+        }
+
+        function syncWithFirebase() {
+            db.ref(`rooms/${ROOM_ID}/users`).on('value', (snapshot) => {
                 const users = snapshot.val();
                 if (!users) return;
 
                 const grid = document.getElementById('video-grid');
+                const participants = callFrame.participants();
+
                 if (myRole === "host") updateAdminPanel(users);
 
-                Object.keys(users).forEach((id) => {
+                Object.keys(users).forEach(id => {
                     const userData = users[id];
                     let slot = document.getElementById(`slot-${id}`);
 
@@ -178,60 +150,42 @@
                     }
 
                     // Сортування через CSS Order
-                    slot.style.order = userData.number ? parseInt(userData.number) : 99;
+                    slot.style.order = userData.number || 99;
 
-                    const labelText = `${userData.number ? '[' + userData.number + '] ' : ''}${userData.status === 'dead' ? '💀 ВБИТО: ' : ''}${userData.name}`;
-                    
+                    const label = `${userData.number ? '['+userData.number+'] ' : ''}${userData.status === 'dead' ? '💀 ВБИТО: ' : ''}${userData.name}`;
                     slot.innerHTML = `
                         <div class="slot-number-bg">${userData.number || ''}</div>
-                        <div class="player-label">${labelText}</div>
-                        <div id="player-container-${id}" class="video-player"></div>
+                        <div class="player-label">${label}</div>
+                        <video id="video-${id}" autoplay playsinline muted="${id === myId}"></video>
                     `;
 
-                    // Рендеримо відео
-                    setTimeout(() => {
-                        if (id === myId && localTracks.videoTrack) {
-                            localTracks.videoTrack.play(`player-container-${id}`);
-                        } else {
-                            const remoteUser = client.remoteUsers.find(u => "user_" + u.uid === id);
-                            if (remoteUser && remoteUser.videoTrack) {
-                                remoteUser.videoTrack.play(`player-container-${id}`);
-                            }
-                        }
-                    }, 100);
-                });
-
-                // Видаляємо тих, хто вийшов
-                Array.from(grid.children).forEach(child => {
-                    const childId = child.id.replace('slot-', '');
-                    if (!users[childId]) child.remove();
+                    // Підключаємо потік до відео-тегу
+                    const p = id === myId ? participants.local : participants[id];
+                    if (p && p.videoTrack) {
+                        const vTag = document.getElementById(`video-${id}`);
+                        vTag.srcObject = new MediaStream([p.videoTrack]);
+                    }
                 });
             });
         }
 
         window.assignNumbers = function() {
-            db.ref(`rooms/${CHANNEL}/users`).once('value', snapshot => {
+            db.ref(`rooms/${ROOM_ID}/users`).once('value', snapshot => {
                 const data = snapshot.val();
-                if (!data) return;
                 const ids = Object.keys(data);
                 let nums = Array.from({length: ids.length}, (_, i) => (i + 1).toString().padStart(2, '0')).sort(() => Math.random() - 0.5);
-                let updates = {};
-                ids.forEach((id, i) => updates[`${id}/number`] = nums[i]);
-                db.ref(`rooms/${CHANNEL}/users`).update(updates);
+                ids.forEach((id, i) => db.ref(`rooms/${ROOM_ID}/users/${id}/number`).set(nums[i]));
             });
         };
 
         function updateAdminPanel(users) {
             const list = document.getElementById('player-list-admin');
             list.innerHTML = '';
-            
-            // Сортуємо і в адмінці для зручності
             Object.keys(users).sort((a,b) => (users[a].number || 99) - (users[b].number || 99)).forEach(id => {
                 const u = users[id];
-                list.innerHTML += `
-                <div class="player-row ${u.status === 'dead' ? 'dead' : ''}">
-                    <span style="font-size: 13px;"><b>${u.number || '??'}.</b> ${u.name}</span>
-                    <button onclick="db.ref('rooms/${CHANNEL}/users/${id}/status').set('${u.status === 'dead' ? 'alive' : 'dead'}')" style="width: 70px; padding: 6px; font-size: 10px; margin: 0;">
+                list.innerHTML += `<div class="player-row ${u.status === 'dead' ? 'dead' : ''}">
+                    <span><b>${u.number || '??'}.</b> ${u.name}</span>
+                    <button onclick="db.ref('rooms/${ROOM_ID}/users/${id}/status').set('${u.status === 'dead' ? 'alive' : 'dead'}')">
                         ${u.status === 'dead' ? 'ОЖИТИ' : 'ВБИТИ'}
                     </button>
                 </div>`;
