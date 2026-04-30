@@ -52,12 +52,25 @@
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="letter-spacing: 2px;">MAFIA LIVEKIT</h2>
-            <input type="text" id="userName" placeholder="Твоє ім'я">
-            <input type="text" id="joinToken" placeholder="Встав токен з консолі">
-            <input type="password" id="roomPass" placeholder="Пароль">
-            <button onclick="startApp()">УВІЙТИ</button>
-        </div>
+    <h2 style="letter-spacing: 2px;">MAFIA LIVEKIT</h2>
+    
+    <!-- Поле імені -->
+    <input type="text" id="userName" 
+           placeholder="Твоє ім'я" 
+           autocomplete="username">
+    
+    <!-- Поле токена (якщо це одноразовий код, краще вимкнути або поставити one-time-code) -->
+    <input type="text" id="joinToken" 
+           placeholder="Встав токен з консолі" 
+           autocomplete="off">
+    
+    <!-- Поле пароля -->
+    <input type="password" id="roomPass" 
+           placeholder="Пароль" 
+           autocomplete="current-password">
+    
+    <button onclick="startApp()">УВІЙТИ</button>
+</div>
     </div>
 
     <div id="video-grid"></div>
