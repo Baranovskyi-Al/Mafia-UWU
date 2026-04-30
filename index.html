@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>МАФІЯ - STABLE v3.1</title>
+    <title>МАФІЯ - STABLE v3.2</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%230a0a0a' stroke='%23d32f2f' stroke-width='4'/><path d='M25 65 h50 v5 a5 5 0 0 1 -5 5 h-40 a5 5 0 0 1 -5 -5 z' fill='%23d32f2f'/><path d='M35 65 v-20 c0-10 10-15 15-15 s15 5 15 15 v20' fill='%23d32f2f'/><rect x='35' y='55' width='30' height='5' fill='%23000'/></svg>">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -16,7 +16,10 @@
         .video-slot.dead iframe { opacity: 0.5; filter: grayscale(0.8); }
         .killed-overlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; z-index: 20; pointer-events: none; color: var(--accent); font-size: 60px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 20px #000; letter-spacing: 5px; transform: rotate(-10deg); }
         .video-slot.dead .killed-overlay { display: flex; }
-        iframe { width: 100%; height: 100%; border: none; background: #000; }
+        
+        /* Додано object-fit для іфрейму */
+        iframe { width: 100%; height: 100%; border: none; background: #000; object-fit: cover; }
+        
         .player-label { position: absolute; top: 40px; left: 10px; background: rgba(0,0,0,0.8); padding: 4px 12px; border-radius: 6px; z-index: 10; font-size: 13px; border: 1px solid #444; font-weight: bold; pointer-events: none; }
         .slot-num { position: absolute; top: 5px; right: 15px; font-size: 40px; font-weight: 900; color: rgba(255,255,255,0.07); z-index: 5; pointer-events: none; }
         #host-panel { width: 340px; background: var(--panel); border-left: 2px solid #222; padding: 20px; display: none; flex-direction: column; box-sizing: border-box; }
@@ -74,14 +77,11 @@
             const pass = document.getElementById('roomPass').value.trim();
             if (!rawName) return alert("Введіть ім'я");
             if (/[а-яА-ЯіІїЇєЄґҐ]/.test(rawName)) return alert("Тільки латиниця!");
-
             myId = "p_" + rawName.toLowerCase().replace(/\s+/g, '_');
-
             if (pass === PASSWORDS.host) myRole = "host";
             else if (pass === PASSWORDS.player) myRole = "player";
             else if (pass === PASSWORDS.observer) myRole = "observer";
             else return alert("Невірний пароль");
-
             document.getElementById('login-screen').style.display = 'none';
             if (myRole === "host") document.getElementById('host-panel').style.display = 'flex';
             if (myRole !== "observer") {
@@ -89,7 +89,6 @@
                 const userRef = db.ref(`rooms/${ROOM_NAME}/users/${myId}`);
                 userRef.set({ name: rawName, status: "alive", streamId: myId + "_stream", number: "", role: myRole });
                 userRef.onDisconnect().remove();
-                
                 userRef.on('value', (snap) => {
                     if (!snap.exists() && myRole !== "host") {
                         alert("Вас виключено!");
@@ -105,11 +104,9 @@
                 const users = snapshot.val() || {};
                 const grid = document.getElementById('video-grid');
                 if (myRole === "host") updateAdminPanel(users);
-
                 Array.from(grid.children).forEach(child => {
                     if (!users[child.id.replace('slot-', '')]) child.remove();
                 });
-
                 Object.keys(users).forEach(id => {
                     const u = users[id];
                     let slot = document.getElementById(`slot-${id}`);
@@ -125,9 +122,10 @@
                     slot.querySelector('.player-label').innerText = `${(u.role === 'host') ? '[Ведучий] ' : ''}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
                     slot.querySelector('.slot-num').innerText = (u.role === 'host') ? '' : (u.number || '');
                     
+                    // ДОДАНО &cover=1 для заповнення всього слоту
                     const ninjaUrl = (id === myId && myRole !== "observer") 
-                        ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro`
-                        : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean`;
+                        ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro&cover=1`
+                        : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean&cover=1`;
                     
                     const iframe = slot.querySelector('iframe');
                     if (iframe.src !== ninjaUrl) iframe.src = ninjaUrl;
@@ -135,7 +133,6 @@
             });
         }
 
-        // ОНОВЛЕНО: Додано перевірку, щоб не показувати кнопки для самого себе або інших ведучих
         function updateAdminPanel(users) {
             const list = document.getElementById('player-list-admin');
             list.innerHTML = '';
@@ -143,19 +140,11 @@
                 const u = users[id];
                 const row = document.createElement('div');
                 row.className = 'player-row';
-                
-                let controls = '';
-                // Якщо це інший ведучий або я сам
-                if (u.role === 'host' || id === myId) {
-                    controls = `<span style="font-size:10px; color:#777;">${id === myId ? 'ЦЕ ТИ' : 'ВЕДУЧИЙ'}</span>`;
-                } else {
-                    controls = `
-                        <div style="display:flex; gap:5px; margin-top:5px;">
-                            <button onclick="toggleLife('${id}')" style="width:100%">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
-                            <button onclick="kickPlayer('${id}')" style="background:#444; width:60px; font-size:10px;">КІК</button>
-                        </div>`;
-                }
-
+                let controls = (u.role === 'host' || id === myId) ? `<span style="font-size:10px; color:#777;">${id === myId ? 'ЦЕ ТИ' : 'ВЕДУЧИЙ'}</span>` : `
+                    <div style="display:flex; gap:5px; margin-top:5px;">
+                        <button onclick="toggleLife('${id}')" style="width:100%">${u.status === 'dead' ? 'ОЖИВИТИ' : 'ВБИТИ'}</button>
+                        <button onclick="kickPlayer('${id}')" style="background:#444; width:60px; font-size:10px;">КІК</button>
+                    </div>`;
                 row.innerHTML = `<span><b>${u.number || (u.role === 'host' ? '★' : '??')}.</b> ${u.name}</span>${controls}`;
                 list.appendChild(row);
             });
@@ -166,13 +155,7 @@
                 db.ref(`rooms/${ROOM_NAME}/users/${id}/status`).set(s.val() === 'dead' ? 'alive' : 'dead');
             });
         };
-
-        window.kickPlayer = id => {
-            if(confirm("Видалити гравця?")) {
-                db.ref(`rooms/${ROOM_NAME}/users/${id}`).remove();
-            }
-        };
-
+        window.kickPlayer = id => confirm("Видалити гравця?") && db.ref(`rooms/${ROOM_NAME}/users/${id}`).remove();
         window.assignNumbers = () => {
             db.ref(`rooms/${ROOM_NAME}/users`).once('value', s => {
                 const data = s.val(); if (!data) return;
@@ -182,7 +165,6 @@
                 db.ref(`rooms/${ROOM_NAME}/users`).update(updates);
             });
         };
-
         function exitGame() { confirm("Вийти?") && db.ref(`rooms/${ROOM_NAME}/users/${myId}`).remove().then(() => location.reload()); }
     </script>
 </body>
