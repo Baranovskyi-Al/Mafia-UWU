@@ -154,14 +154,16 @@
                     if (u.status === 'dead') slot.classList.add('dead');
                     else slot.classList.remove('dead');
 
-                    // --- ТІЛЬКИ ЦЯ ПРАВКА: Додаємо префікс для ведучого ---
+                    // ПРЕФІКС ДЛЯ ВЕДУЧОГО
                     const hostPrefix = (u.role === 'host') ? "[Ведучий] " : "";
                     const labelText = `${hostPrefix}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
 
                     let ninjaUrl = "";
                     if (id === myId && myRole !== "observer") {
-                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&autostart&m&pro&as=1&facing=front&ad=1`;
+                        // ПУШ: Додано &autostart для автоматичного вибору камери
+                        ninjaUrl = `https://vdo.ninja/?push=${u.streamId}&label=${u.name}&autostart&m&pro&facing=front&ad=1`;
                     } else {
+                        // ПЕРЕГЛЯД
                         ninjaUrl = `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1`;
                     }
 
