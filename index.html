@@ -111,7 +111,7 @@
             if (myRole !== "observer") {
                 document.getElementById('exit-btn').style.display = 'block';
                 const userRef = db.ref(`rooms/${ROOM_NAME}/users/${myId}`);
-                userRef.set({ name: rawName, status: "alive", streamId: myId + "_stream", number: "", role: myRole });
+                userRef.set({ name: rawName, status: "alive", streamId: myId + "_stream", number: "", role: myRole, deathPhrase: "" });
                 userRef.onDisconnect().remove();
                 userRef.on('value', (snap) => { if (!snap.exists() && myRole !== "host") location.reload(); });
             }
@@ -140,16 +140,14 @@
                     slot.style.order = (u.role === 'host') ? 100 : (u.number || 99);
                     
                     const overlay = slot.querySelector('.killed-overlay');
-                    if (u.status === 'dead') {
+
+                        if (u.status === 'dead') {
                         slot.classList.add('dead');
-                        if (!slot.dataset.currentPhrase) {
-                            const phrase = deathPhrases[Math.floor(Math.random() * deathPhrases.length)];
-                            slot.dataset.currentPhrase = phrase;
-                            overlay.innerText = phrase;
-                        }
-                    } else {
+    
+                        overlay.innerText = u.deathPhrase || "ВБИТО"; 
+                        } else {
                         slot.classList.remove('dead');
-                        delete slot.dataset.currentPhrase;
+                        overlay.innerText = "";
                     }
 
                     slot.querySelector('.player-label').innerText = `${(u.role === 'host') ? '[Ведучий] ' : ''}${u.number ? '[' + u.number + '] ' : ''}${u.status === 'dead' ? '💀 ' : ''}${u.name}`;
@@ -191,8 +189,37 @@
         };
 
         window.toggleLife = id => {
-            db.ref(`rooms/${ROOM_NAME}/users/${id}/status`).once('value', s => {
-                db.ref(`rooms/${ROOM_NAME}/users/${id}/status`).set(s.val() === 'dead' ? 'alive' : 'dead');
+            const roomRef = db.ref(`rooms/${ROOM_NAME}`);
+    
+            roomRef.once('value', snapshot => {
+            const roomData = snapshot.val();
+            const player = roomData.users[id];
+            if (!player) return;
+
+            const newStatus = player.status === 'dead' ? 'alive' : 'dead';
+            let updates = {};
+            updates[`users/${id}/status`] = newStatus;
+
+            if (newStatus === 'dead') {
+            
+            let available = roomData.availablePhrases || [];
+
+            
+            if (available.length === 0) {
+                available = [...deathPhrases].sort(() => Math.random() - 0.5);
+            }
+
+            
+            const chosenPhrase = available.pop();
+
+            updates[`users/${id}/deathPhrase`] = chosenPhrase;
+            updates[`availablePhrases`] = available; 
+            } else {
+            updates[`users/${id}/deathPhrase`] = "";
+            }
+
+        
+            roomRef.update(updates);
             });
         };
 
