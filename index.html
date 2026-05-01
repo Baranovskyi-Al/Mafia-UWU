@@ -52,7 +52,7 @@
     <div id="login-screen">
         <div class="login-box">
             <h2 style="color: var(--accent);">МАФІЯ</h2>
-            <input type="text" id="userName" placeholder="Твоє ім'я (Latin only)" autocomplete="username">
+            <input type="text" id="userName" placeholder="Твоє ім'я (ТІЛЬКИ ЛАТИНИЦЯ)" autocomplete="username">
             <input type="password" id="roomPass" placeholder="Пароль" autocomplete="current-password">
             <button onclick="startApp()">УВІЙТИ В МІСТО</button>
         </div>
@@ -79,15 +79,16 @@
         };
 
         const ROOM_NAME = "MAFIA";
-        const PASSWORDS = { host: "321", player: "123", observer: "333" };
+        const PASSWORDS = { host: "nata419", player: "uwu420", observer: "4220" };
 
         const deathPhrases = [
             "НЕЗАКОННО ВБИТО БЛ...", "НЕСПРАВЕДЛИВО ЗАВАЛЕНО", "ВАЛЯЄТЬСЯ В КАНАВІ",
             "ГОДУЄ ЧЕРВ’ЯКІВ", "ВІДПОЧИВАЄ ВІЧНО", "ПЛАВАЄ З РИБАМИ",
-            "ЗАМОЧЕНО Й ОБПІСЯНО", "ЧИСТО ВИПАДКОВО В'ЄБАЛИ", "ЙШОВ, ЙШОВ І ВПАВ",
+            "ЗАМОЧЕНО І ОБПІСЯНО", "ЧИСТО ВИПАДКОВО В'ЄБАЛИ", "ЙШОВ, ЙШОВ І ВПАВ",
             "ВЖАЛЕНО БДЖІЛКОЮ", "ПРОСТО НЕ ПОВЕЗЛО", "БІЛЬШЕ НЕ ГОВОРИТЬ",
-            "З’ЇДЕНИЙ ЩУРАМИ", "ВБИТО ЗА ПОГАНЕ КУНІ", "НОСОЧОК БЛЯЯЯ!!!", "ПОВАГИ НАТІ НЕДОСТАТНЬО!", "ЦЕ ГГ...",
-            "ВБИЛИ Й НАДРУГАЛИСЬ", "ВБИЛИ ЗА ВЕЛИКИЙ ХУЙ", "СМЕРТЬ ПРИЙШЛА ПІДЧАС UWU", "НЕ ПЕРЕЖИВ ХТИВІСТЬ ЛІРИКИ", "ЦЕ ВСЕ НОУБАДІ!"
+            "З’ЇДЕНИЙ ЩУРАМИ", "ВБИТО ЗА ПОГАНЕ КУНІ", "НОСОЧОК БЛЯЯЯ!!!", "ПОВАГИ НАТІ БУЛО НЕДОСТАТНЬО!", "ЦЕ ГГ...",
+            "ВБИЛИ Й НАДРУГАЛИСЬ", "ВБИЛИ ЗА ВЕЛИКИЙ ХУЙ", "СМЕРТЬ ПРИЙШЛА ПІДЧАС UWU", "НЕ ПЕРЕЖИВ ХТИВІСТЬ ЛІРИКИ", "ЦЕ ВСЕ НОУБАДІ!",
+            "ЗАМОЧИЛИ І ЖАМК-ЖАМК", "ЗАСУНУЛИ АНАНАС В Ж...", "ВБИЛИ РАДІ ДЄВУШЕК", "ЗАСУНУЛИ В ІЛЮХУ", "ЗАДУШЕНО НАВОЛОЧКОЮ"
         ];
 
         firebase.initializeApp(firebaseConfig);
@@ -155,8 +156,8 @@
                     slot.querySelector('.slot-num').innerText = (u.role === 'host') ? '' : (u.number || '');
                     
                     const ninjaUrl = (id === myId && myRole !== "observer") 
-    ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro&cover=1&codec=h264&outboundvideobitrate=1500&lowlatency`
-    : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean&cover=1&codec=h264&videobitrate=1500&lowlatency&buffer=0&sync=0`;
+                        ? `https://vdo.ninja/?push=${u.streamId}&webcam&label=${u.name}&as=1&autoconnect&facing=front&ad=1&m&pro&cover=1&codec=h264&outboundvideobitrate=1500&lowlatency`
+                        : `https://vdo.ninja/?view=${u.streamId}&autoplay&autostart&noapi&ad=1&clean&cover=1&codec=h264&videobitrate=1500&lowlatency&buffer=0&sync=0`;
                     
                     const iframe = slot.querySelector('iframe');
                     if (iframe.src !== ninjaUrl) iframe.src = ninjaUrl;
